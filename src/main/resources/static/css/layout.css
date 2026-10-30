@@ -9,6 +9,24 @@
   position: relative;
 }
 
+/* Sidebar Container in Flex Flow */
+#sidebar-container {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  max-width: var(--sidebar-width);
+  flex-shrink: 0;
+  position: relative;
+  transition: width var(--transition-normal), min-width var(--transition-normal), max-width var(--transition-normal);
+}
+
+body.sidebar-collapsed #sidebar-container,
+#sidebar-container.collapsed,
+#sidebar-container:has(.sidebar.collapsed) {
+  width: var(--sidebar-collapsed-width);
+  min-width: var(--sidebar-collapsed-width);
+  max-width: var(--sidebar-collapsed-width);
+}
+
 /* Sidebar Styling */
 .sidebar {
   width: var(--sidebar-width);
@@ -24,6 +42,8 @@
   transition: width var(--transition-normal), transform var(--transition-normal);
 }
 
+body.sidebar-collapsed .sidebar,
+#sidebar-container.collapsed .sidebar,
 .sidebar.collapsed {
   width: var(--sidebar-collapsed-width);
 }
@@ -225,27 +245,15 @@
 /* Main Container */
 .main-container {
   flex: 1;
-  margin-left: var(--sidebar-width);
-  width: calc(100% - var(--sidebar-width));
-  max-width: calc(100% - var(--sidebar-width));
   min-width: 0;
+  width: 100%;
+  margin-left: 0 !important;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   box-sizing: border-box;
-  transition: margin-left var(--transition-normal), width var(--transition-normal), max-width var(--transition-normal);
   overflow-x: hidden;
-}
-
-body.sidebar-collapsed .sidebar,
-.sidebar.collapsed {
-  width: var(--sidebar-collapsed-width);
-}
-
-body.sidebar-collapsed .main-container {
-  margin-left: var(--sidebar-collapsed-width);
-  width: calc(100% - var(--sidebar-collapsed-width));
-  max-width: calc(100% - var(--sidebar-collapsed-width));
+  position: relative;
 }
 
 body.sidebar-collapsed .brand-text,
@@ -421,8 +429,16 @@ body.sidebar-collapsed .nav-item,
 }
 
 @media (max-width: 992px) {
+  #sidebar-container {
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    display: none;
+  }
+
   .sidebar {
     transform: translateX(-100%);
+    width: var(--sidebar-width) !important;
   }
 
   .sidebar.mobile-open {
@@ -434,8 +450,7 @@ body.sidebar-collapsed .nav-item,
     opacity: 1;
   }
 
-  .main-container,
-  body.sidebar-collapsed .main-container {
+  .main-container {
     margin-left: 0 !important;
     width: 100% !important;
     max-width: 100% !important;

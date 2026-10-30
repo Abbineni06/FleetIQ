@@ -61,8 +61,10 @@ function renderSidebar(container) {
 
   const isCollapsed = localStorage.getItem('fleetiq_sidebar_collapsed') === 'true';
   if (isCollapsed) {
+    container.classList.add('collapsed');
     document.body.classList.add('sidebar-collapsed');
   } else {
+    container.classList.remove('collapsed');
     document.body.classList.remove('sidebar-collapsed');
   }
 
@@ -165,9 +167,14 @@ function renderSidebar(container) {
 
   if (toggleBtn && sidebar) {
     toggleBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('collapsed');
-      document.body.classList.toggle('sidebar-collapsed');
-      localStorage.setItem('fleetiq_sidebar_collapsed', sidebar.classList.contains('collapsed'));
+      const isColl = sidebar.classList.toggle('collapsed');
+      container.classList.toggle('collapsed', isColl);
+      document.body.classList.toggle('sidebar-collapsed', isColl);
+      localStorage.setItem('fleetiq_sidebar_collapsed', isColl);
+      // Trigger Chart.js and responsive elements resize reflow
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 300);
     });
   }
 
