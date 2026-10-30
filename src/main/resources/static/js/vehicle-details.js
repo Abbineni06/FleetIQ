@@ -337,7 +337,7 @@ async function loadQrTab() {
     document.getElementById('qr-image-display').src = qrData.qrCodeBase64;
     document.getElementById('qr-token-text').textContent = qrData.token;
     document.getElementById('btn-download-qr').href = qrData.qrCodeBase64;
-    document.getElementById('btn-open-public-profile').href = `/qr-view.html?token=${qrData.token}`;
+    document.getElementById('btn-open-public-profile').href = `qr-view.html?token=${qrData.token}`;
   } catch (e) {
     showToast('Failed to load QR token: ' + e.message, 'danger');
   }

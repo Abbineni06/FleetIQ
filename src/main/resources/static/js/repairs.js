@@ -35,9 +35,12 @@ async function loadVehicles() {
 
 async function loadRepairs() {
   try {
-    allRepairs = await API.get('/api/repairs');
+    const rawRepairs = await API.get('/api/repairs');
+    allRepairs = Array.isArray(rawRepairs) ? rawRepairs : [];
     applyRepairFilters();
   } catch (err) {
+    allRepairs = [];
+    applyRepairFilters();
     showToast('Failed to load repairs: ' + err.message, 'danger');
   }
 }
@@ -45,8 +48,9 @@ async function loadRepairs() {
 function applyRepairFilters() {
   const statusFilter = document.getElementById('repair-status-filter')?.value || '';
   const catFilter = document.getElementById('repair-cat-filter')?.value || '';
+  const list = Array.isArray(allRepairs) ? allRepairs : [];
 
-  const filtered = allRepairs.filter(r => {
+  const filtered = list.filter(r => {
     const matchesStatus = !statusFilter || r.repairStatus === statusFilter;
     const matchesCat = !catFilter || r.repairCategory === catFilter;
     return matchesStatus && matchesCat;

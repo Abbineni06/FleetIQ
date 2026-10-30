@@ -36,8 +36,10 @@ async function loadVehicles() {
 
 async function loadFuelData() {
   try {
-    allFuelRecords = await API.get('/api/fuel');
-    const comparison = await API.get('/api/fuel/comparison');
+    const rawFuel = await API.get('/api/fuel');
+    allFuelRecords = Array.isArray(rawFuel) ? rawFuel : [];
+    const rawComp = await API.get('/api/fuel/comparison');
+    const comparison = Array.isArray(rawComp) ? rawComp : [];
 
     // Aggregate KPIs
     let totalL = 0;
@@ -63,6 +65,8 @@ async function loadFuelData() {
     renderFuelTable(allFuelRecords);
 
   } catch (err) {
+    allFuelRecords = [];
+    renderFuelTable([]);
     showToast('Failed to load fuel records: ' + err.message, 'danger');
   }
 }

@@ -108,7 +108,8 @@ async function loadRecentInspections() {
   if (!container) return;
 
   try {
-    const list = await API.get('/api/inspections/recent');
+    const rawList = await API.get('/api/inspections/recent');
+    const list = Array.isArray(rawList) ? rawList : [];
     if (list.length === 0) {
       container.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);">No inspections logged yet.</div>`;
       return;
@@ -122,6 +123,9 @@ async function loadRecentInspections() {
         statusBadge = '<span class="badge badge-warning">Needs Attention</span>';
       }
 
+      const notes = i.generalNotes || i.comments || 'Pre-trip checklist completed';
+      const timeStr = typeof formatTimeAgo === 'function' ? formatTimeAgo(i.inspectionDate) : (i.inspectionDate || 'Today');
+
       return `
         <div style="background:var(--bg-subtle);border-radius:var(--radius-md);padding:14px;border:1px solid var(--border-light);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -131,11 +135,11 @@ async function loadRecentInspections() {
             ${statusBadge}
           </div>
           <div style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:6px;">
-            ${escapeHtml(i.generalNotes || 'Pre-trip checklist completed')}
+            ${escapeHtml(notes)}
           </div>
           <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-muted);">
             <span>Inspector: ${escapeHtml(i.inspectorName || 'Driver')}</span>
-            <span>${formatTimeAgo(i.inspectionDate)}</span>
+            <span>${timeStr}</span>
           </div>
         </div>
       `;
