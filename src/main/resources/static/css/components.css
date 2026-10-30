@@ -222,9 +222,8 @@
 .kpi-meta {
   font-size: 0.78rem;
   color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  line-height: 1.35;
+  display: block;
 }
 
 /* Buttons */
