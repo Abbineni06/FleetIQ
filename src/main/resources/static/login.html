@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - Sign In | Intelligent Fleet. Smarter Maintenance.</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #F8F8F8 0%, #FFF7ED 100%);
+      padding: 24px;
+    }
+
+    [data-theme="dark"] .auth-page {
+      background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%);
+    }
+
+    .auth-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .auth-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      justify-content: center;
+    }
+
+    .demo-accounts {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .demo-btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .demo-pill {
+      font-size: 0.75rem;
+      padding: 6px 10px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-weight: 600;
+      text-align: center;
+      transition: all var(--transition-fast);
+    }
+
+    .demo-pill:hover {
+      background: var(--light-orange);
+      border-color: var(--primary-orange);
+      color: var(--primary-orange);
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="brand-icon" style="width:42px;height:42px;">
+          <i data-lucide="shield-check" style="width:24px;height:24px;"></i>
+        </div>
+        <div style="font-size:1.6rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.5px;">
+          Fleet<span style="color:var(--primary-orange);">IQ</span>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-bottom:28px;">
+        <h2 style="font-size:1.3rem;font-weight:700;color:var(--text-primary);">Welcome Back</h2>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:4px;">Intelligent Fleet. Smarter Maintenance.</p>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="username">Username or Email</label>
+          <input type="text" id="username" class="form-control" placeholder="e.g. admin or manager" required />
+        </div>
+
+        <div class="form-group">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <label class="form-label" for="password" style="margin-bottom:0;">Password</label>
+          </div>
+          <input type="password" id="password" class="form-control" placeholder="••••••••" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="login-btn" style="width:100%;padding:11px;font-size:0.95rem;">
+          <i data-lucide="log-in" style="width:18px;height:18px;"></i> Sign In to FleetIQ
+        </button>
+      </form>
+
+      <div class="demo-accounts">
+        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.05em;text-align:center;">
+          Quick Demo Credentials
+        </div>
+        <div class="demo-btn-group">
+          <button type="button" class="demo-pill" onclick="fillDemo('admin', 'admin123')">
+            👑 Admin
+          </button>
+          <button type="button" class="demo-pill" onclick="fillDemo('manager', 'manager123')">
+            💼 Manager
+          </button>
+          <button type="button" class="demo-pill" onclick="fillDemo('driver1', 'driver123')">
+            🚛 Driver
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+
+    function fillDemo(username, password) {
+      document.getElementById('username').value = username;
+      document.getElementById('password').value = password;
+      showToast(`Filled demo credentials for ${username}`, 'info', 2000);
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="spin"></i> Signing in...`;
+      if (window.lucide) lucide.createIcons();
+
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value;
+
+      try {
+        await Auth.login(u, p);
+        showToast('Login successful! Redirecting to dashboard...', 'success');
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 600);
+      } catch (err) {
+        showToast(err.message || 'Invalid credentials', 'danger');
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="log-in" style="width:18px;height:18px;"></i> Sign In to FleetIQ`;
+        if (window.lucide) lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>

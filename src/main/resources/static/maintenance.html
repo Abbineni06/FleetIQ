@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - Predictive Maintenance System</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-container"></div>
+
+    <div class="main-container">
+      <div id="header-container" data-title="Predictive Maintenance" data-breadcrumb="FleetIQ / Maintenance / Predictive"></div>
+
+      <main class="page-content">
+        <!-- Top Banner & Metrics -->
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:24px;gap:16px;">
+          <div>
+            <h2 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">Predictive Maintenance System</h2>
+            <p style="color:var(--text-secondary);font-size:0.88rem;margin-top:2px;">
+              Rule-based dynamic service forecasting calculated from historical odometer progression.
+            </p>
+          </div>
+
+          <button class="btn btn-primary" onclick="openRecordMaintenanceModal()">
+            <i data-lucide="wrench" style="width:16px;height:16px;"></i> Record Completed Service
+          </button>
+        </div>
+
+        <!-- Urgency KPI Summary -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Service Overdue</span>
+              <div class="kpi-icon red"><i data-lucide="alert-octagon"></i></div>
+            </div>
+            <div class="kpi-value" id="count-overdue" style="color:var(--status-danger);">-</div>
+            <div class="kpi-meta">Immediate action required</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Due Soon (<500 KM)</span>
+              <div class="kpi-icon yellow"><i data-lucide="alert-triangle"></i></div>
+            </div>
+            <div class="kpi-value" id="count-due-soon" style="color:var(--status-warning);">-</div>
+            <div class="kpi-meta">Workshop booking window</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Upcoming (500-1000 KM)</span>
+              <div class="kpi-icon orange"><i data-lucide="clock"></i></div>
+            </div>
+            <div class="kpi-value" id="count-upcoming">-</div>
+            <div class="kpi-meta">Monitor weekly mileage</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Normal (>1000 KM)</span>
+              <div class="kpi-icon green"><i data-lucide="check-circle"></i></div>
+            </div>
+            <div class="kpi-value" id="count-normal">-</div>
+            <div class="kpi-meta">Operating within threshold</div>
+          </div>
+        </div>
+
+        <!-- Predictive Table -->
+        <div class="card" style="margin-bottom:28px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i data-lucide="sparkles" style="color:var(--primary-orange);"></i> Fleet Service Forecast & Countdown</div>
+              <div class="card-subtitle">Real-time daily distance calculation and estimated service dates</div>
+            </div>
+            <select id="urgency-filter" class="form-select" style="width:180px;" onchange="renderPredictions()">
+              <option value="">All Urgency Levels</option>
+              <option value="OVERDUE">Overdue Only</option>
+              <option value="DUE_SOON">Due Soon Only</option>
+              <option value="UPCOMING">Upcoming Only</option>
+              <option value="NORMAL">Normal Only</option>
+            </select>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Vehicle</th>
+                  <th>Current KM</th>
+                  <th>Last Svc KM</th>
+                  <th>Next Svc KM</th>
+                  <th>Remaining KM</th>
+                  <th>Avg Daily KM</th>
+                  <th>Forecasted Date</th>
+                  <th>Urgency Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="predictive-tbody">
+                <tr><td colspan="9" style="text-align:center;padding:28px;">Calculating maintenance predictions...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Completed Maintenance Table -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i data-lucide="history" style="color:var(--primary-orange);"></i> Recently Completed Fleet Maintenance</div>
+          </div>
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Service Date</th>
+                  <th>Vehicle</th>
+                  <th>Service Type</th>
+                  <th>Odometer</th>
+                  <th>Work Performed</th>
+                  <th>Parts</th>
+                  <th>Cost</th>
+                  <th>Workshop / Mechanic</th>
+                </tr>
+              </thead>
+              <tbody id="recent-maint-tbody">
+                <tr><td colspan="8" style="text-align:center;padding:24px;">Loading maintenance records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Record Maintenance Modal -->
+  <div class="modal-overlay" id="record-maint-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="wrench" style="color:var(--primary-orange);"></i> Record Completed Maintenance</h3>
+        <button class="modal-close" onclick="closeRecordMaintenanceModal()"><i data-lucide="x"></i></button>
+      </div>
+
+      <form id="record-maint-form" onsubmit="handleMaintSubmit(event)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Select Vehicle *</label>
+            <select id="maint-vehicle-id" class="form-select" required onchange="populateVehicleCurrentKm()">
+              <option value="">Choose vehicle...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Service Date *</label>
+            <input type="date" id="maint-service-date" class="form-control" required />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Odometer at Service (KM) *</label>
+            <input type="number" id="maint-odometer" class="form-control" min="0" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Maintenance Type *</label>
+            <select id="maint-type" class="form-select" required>
+              <option value="Regular Service">Regular Service</option>
+              <option value="Oil & Filter Change">Oil & Filter Change</option>
+              <option value="Transmission Service">Transmission Service</option>
+              <option value="Brake System Overhaul">Brake System Overhaul</option>
+              <option value="DOT Annual Inspection">DOT Annual Inspection</option>
+              <option value="Major Overhaul">Major Overhaul</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Work Performed *</label>
+          <textarea id="maint-work" class="form-control" rows="2" placeholder="Describe mechanical procedures executed..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Parts Replaced</label>
+          <input type="text" id="maint-parts" class="form-control" placeholder="e.g. Oil filter, synthetic 15W-40, air filter" />
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Total Cost ($) *</label>
+            <input type="number" step="0.01" id="maint-cost" class="form-control" placeholder="e.g. 450.00" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Mechanic / Workshop Name</label>
+            <input type="text" id="maint-mechanic" class="form-control" placeholder="e.g. Penske Truck Care" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Next Service Interval (KM)</label>
+          <input type="number" id="maint-interval" class="form-control" value="10000" />
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeRecordMaintenanceModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save & Synchronize</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/maintenance.js"></script>
+</body>
+</html>

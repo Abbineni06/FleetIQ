@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - AI Fleet Maintenance Assistant</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .chat-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
+      height: calc(100vh - var(--header-height) - 60px);
+    }
+
+    .chat-main {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .message-bubble {
+      display: flex;
+      gap: 14px;
+      max-width: 85%;
+    }
+
+    .message-bubble.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message-bubble.assistant {
+      align-self: flex-start;
+    }
+
+    .msg-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .msg-avatar.user-av {
+      background: var(--text-primary);
+      color: #FFFFFF;
+    }
+
+    .msg-avatar.ai-av {
+      background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+      color: #FFFFFF;
+      box-shadow: var(--shadow-orange);
+    }
+
+    .msg-content {
+      padding: 14px 18px;
+      border-radius: var(--radius-lg);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .message-bubble.user .msg-content {
+      background: var(--primary-orange);
+      color: #FFFFFF;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message-bubble.assistant .msg-content {
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+      border: 1px solid var(--border-light);
+      border-bottom-left-radius: 4px;
+    }
+
+    .message-bubble.assistant .msg-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 0.85rem;
+    }
+
+    .message-bubble.assistant .msg-content th,
+    .message-bubble.assistant .msg-content td {
+      border: 1px solid var(--border-color);
+      padding: 6px 10px;
+    }
+
+    .message-bubble.assistant .msg-content th {
+      background: var(--bg-card);
+      font-weight: 700;
+    }
+
+    .message-bubble.assistant .msg-content blockquote {
+      border-left: 3px solid var(--primary-orange);
+      padding-left: 10px;
+      margin: 8px 0;
+      color: var(--text-secondary);
+    }
+
+    .chat-input-bar {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-card);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .chat-input-bar textarea {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      resize: none;
+      outline: none;
+      height: 44px;
+      transition: all var(--transition-fast);
+    }
+
+    .chat-input-bar textarea:focus {
+      border-color: var(--primary-orange);
+      background: var(--bg-card);
+      box-shadow: 0 0 0 3px var(--orange-subtle);
+    }
+
+    .suggestion-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      font-size: 0.8rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      text-align: left;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .suggestion-chip:hover {
+      border-color: var(--primary-orange);
+      background: var(--light-orange);
+      color: var(--primary-orange);
+    }
+
+    @media (max-width: 992px) {
+      .chat-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      .chat-main {
+        height: 600px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-container"></div>
+
+    <div class="main-container">
+      <div id="header-container" data-title="AI Fleet Assistant" data-breadcrumb="FleetIQ / Intelligence / AI Assistant"></div>
+
+      <main class="page-content" style="padding-bottom:12px;">
+        <div class="chat-layout">
+          <!-- Left Suggestions Sidebar -->
+          <div style="display:flex;flex-direction:column;gap:12px;overflow-y:auto;">
+            <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.05em;">
+              Suggested Fleet Questions
+            </div>
+
+            <button class="suggestion-chip" onclick="askPreset('Which vehicle needs maintenance next?')">
+              <i data-lucide="sparkles" style="width:14px;height:14px;color:var(--primary-orange);"></i>
+              Which vehicle needs maintenance next?
+            </button>
+
+            <button class="suggestion-chip" onclick="askPreset('Which vehicles are overdue for service?')">
+              <i data-lucide="alert-triangle" style="width:14px;height:14px;color:var(--status-danger);"></i>
+              Which vehicles are overdue for service?
+            </button>
+
+            <button class="suggestion-chip" onclick="askPreset('Which vehicle has the highest repair cost?')">
+              <i data-lucide="dollar-sign" style="width:14px;height:14px;color:var(--primary-orange);"></i>
+              Which vehicle has highest repair cost?
+            </button>
+
+            <button class="suggestion-chip" onclick="askPreset('Show vehicles with poor health scores.')">
+              <i data-lucide="activity" style="width:14px;height:14px;color:var(--status-warning);"></i>
+              Show vehicles with poor health scores.
+            </button>
+
+            <button class="suggestion-chip" onclick="askPreset('What are the total repair expenses this month?')">
+              <i data-lucide="pie-chart" style="width:14px;height:14px;color:var(--status-info);"></i>
+              Total repair expenses this month?
+            </button>
+
+            <button class="suggestion-chip" onclick="askPreset('Which vehicles have frequent breakdowns?')">
+              <i data-lucide="wrench" style="width:14px;height:14px;color:var(--primary-orange);"></i>
+              Vehicles with frequent breakdowns?
+            </button>
+
+            <button class="suggestion-chip" onclick="askPreset('Compare fuel consumption between vehicles.')">
+              <i data-lucide="fuel" style="width:14px;height:14px;color:var(--secondary-orange);"></i>
+              Compare fuel consumption (KM/L).
+            </button>
+
+            <button class="suggestion-chip" onclick="askPreset('Recommend maintenance priorities for this month.')">
+              <i data-lucide="check-square" style="width:14px;height:14px;color:var(--status-success);"></i>
+              Recommend maintenance priorities.
+            </button>
+
+            <button class="btn btn-sm btn-secondary" style="margin-top:auto;" onclick="clearChatHistory()">
+              <i data-lucide="trash-2" style="width:14px;height:14px;"></i> Clear Chat History
+            </button>
+          </div>
+
+          <!-- Main Chat Panel -->
+          <div class="chat-main">
+            <!-- Messages Stream -->
+            <div class="chat-messages" id="chat-messages-container">
+              <!-- Welcome greeting -->
+              <div class="message-bubble assistant">
+                <div class="msg-avatar ai-av"><i data-lucide="bot" style="width:20px;height:20px;"></i></div>
+                <div class="msg-content">
+                  <strong>Hello! I am FleetIQ AI Assistant.</strong><br/>
+                  I have real-time access to your live fleet database, vehicle odometer readings, predictive maintenance schedules, inspection logs, and fuel expense analytics.<br/><br/>
+                  How can I assist your fleet management team today?
+                </div>
+              </div>
+            </div>
+
+            <!-- Input Bar -->
+            <div class="chat-input-bar">
+              <textarea id="chat-input" placeholder="Ask about vehicle maintenance, repairs, fuel or breakdown statistics..." onkeydown="handleInputKey(event)"></textarea>
+              <button class="btn btn-primary" id="chat-send-btn" onclick="sendMessage()">
+                <i data-lucide="send" style="width:16px;height:16px;"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/assistant.js"></script>
+</body>
+</html>

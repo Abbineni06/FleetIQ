@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - Vehicle Fleet Management</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-container"></div>
+
+    <div class="main-container">
+      <div id="header-container" data-title="Vehicle Management" data-breadcrumb="FleetIQ / Vehicles"></div>
+
+      <main class="page-content">
+        <!-- Top Toolbar -->
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:24px;gap:16px;">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div class="search-box" style="width:260px;">
+              <i data-lucide="search" class="search-icon"></i>
+              <input type="text" id="vehicle-search" placeholder="Search registration, model..." oninput="debounceSearch()" />
+            </div>
+
+            <select id="status-filter" class="form-select" style="width:170px;" onchange="applyFilters()">
+              <option value="">All Statuses</option>
+              <option value="ACTIVE">Active</option>
+              <option value="MAINTENANCE_DUE">Maintenance Due</option>
+              <option value="IN_SHOP">In Shop</option>
+              <option value="UNSAFE">Unsafe / Grounded</option>
+            </select>
+
+            <select id="type-filter" class="form-select" style="width:170px;" onchange="applyFilters()">
+              <option value="">All Types</option>
+              <option value="Heavy Truck">Heavy Truck</option>
+              <option value="Cargo Van">Cargo Van</option>
+              <option value="Box Truck">Box Truck</option>
+              <option value="Delivery Van">Delivery Van</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" onclick="openRegisterModal()">
+            <i data-lucide="plus-circle" style="width:18px;height:18px;"></i> Register New Vehicle
+          </button>
+        </div>
+
+        <!-- Vehicles Table Card -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i data-lucide="truck" style="color:var(--primary-orange);"></i> Fleet Vehicles</div>
+              <div class="card-subtitle" id="vehicle-count-label">Loading registered vehicles...</div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table" id="vehicles-table">
+              <thead>
+                <tr>
+                  <th>Vehicle</th>
+                  <th>Type & Fuel</th>
+                  <th>Assigned Driver</th>
+                  <th>Odometer</th>
+                  <th>Next Service</th>
+                  <th>Health Score</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="vehicles-tbody">
+                <tr><td colspan="8" style="text-align:center;padding:28px;">Loading vehicle fleet data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Register Vehicle Modal -->
+  <div class="modal-overlay" id="register-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title-text"><i data-lucide="truck" style="color:var(--primary-orange);"></i> Register New Vehicle</h3>
+        <button class="modal-close" onclick="closeRegisterModal()"><i data-lucide="x"></i></button>
+      </div>
+
+      <form id="vehicle-form" onsubmit="handleVehicleSubmit(event)">
+        <input type="hidden" id="edit-vehicle-id" />
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Registration Number *</label>
+            <input type="text" id="reg-number" class="form-control" placeholder="e.g. FL-109" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">VIN (Vehicle ID) *</label>
+            <input type="text" id="vin" class="form-control" placeholder="17-character VIN" required />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Make *</label>
+            <input type="text" id="make" class="form-control" placeholder="e.g. Ford, Volvo" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Model *</label>
+            <input type="text" id="model" class="form-control" placeholder="e.g. Transit-250" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Year *</label>
+            <input type="number" id="year" class="form-control" min="1990" max="2027" value="2023" required />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Vehicle Type *</label>
+            <select id="vehicle-type" class="form-select" required>
+              <option value="Cargo Van">Cargo Van</option>
+              <option value="Box Truck">Box Truck</option>
+              <option value="Heavy Truck">Heavy Truck</option>
+              <option value="Delivery Van">Delivery Van</option>
+              <option value="Pickup Truck">Pickup Truck</option>
+              <option value="Passenger Van">Passenger Van</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Fuel Type *</label>
+            <select id="fuel-type" class="form-select" required>
+              <option value="Diesel">Diesel</option>
+              <option value="Gasoline">Gasoline</option>
+              <option value="Electric">Electric</option>
+              <option value="Hybrid">Hybrid</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Assigned Driver</label>
+            <select id="assigned-driver" class="form-select">
+              <option value="">Unassigned</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Current Odometer (KM) *</label>
+            <input type="number" id="current-odometer" class="form-control" min="0" placeholder="e.g. 25000" required />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Last Service (KM)</label>
+            <input type="number" id="last-service-km" class="form-control" min="0" placeholder="e.g. 20000" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Service Interval (KM) *</label>
+            <input type="number" id="service-interval" class="form-control" min="1000" value="10000" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Vehicle Image URL (optional)</label>
+          <input type="url" id="image-url" class="form-control" placeholder="https://..." />
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeRegisterModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="save-vehicle-btn">Save Vehicle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Quick Odometer Update Modal -->
+  <div class="modal-overlay" id="odometer-modal">
+    <div class="modal-card" style="max-width:440px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="gauge" style="color:var(--primary-orange);"></i> Update Odometer</h3>
+        <button class="modal-close" onclick="closeOdometerModal()"><i data-lucide="x"></i></button>
+      </div>
+
+      <form id="odometer-form" onsubmit="handleOdometerSubmit(event)">
+        <input type="hidden" id="odo-vehicle-id" />
+        <div style="margin-bottom:14px;">
+          <span style="font-size:0.85rem;color:var(--text-secondary);">Vehicle:</span>
+          <strong id="odo-vehicle-reg" style="font-size:1rem;color:var(--text-primary);margin-left:6px;"></strong>
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">Current: <span id="odo-current-val"></span> KM</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">New Odometer Reading (KM) *</label>
+          <input type="number" id="new-odometer-val" class="form-control" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes (optional)</label>
+          <input type="text" id="odo-notes" class="form-control" placeholder="e.g. End of shift reading" />
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeOdometerModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update KM</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/vehicles.js"></script>
+</body>
+</html>

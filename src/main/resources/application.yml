@@ -1,0 +1,48 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: fleetiq
+  datasource:
+    url: jdbc:mysql://localhost:3306/fleetiq_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:Aa9392*#}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+fleetiq:
+  jwt:
+    secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+    expiration-ms: 86400000 # 24 hours
+  ai:
+    gemini-api-key: ${GEMINI_API_KEY:aAQ.Ab8RN6LOHh2BQc741LPRjTO4u9K8oMQTCVjkKtqZCSI1rmXwFwnd}
+    openrouter-api-key: ${OPENROUTER_API_KEY:}
+    model: ${GEMINI_MODEL:google/gemini-2.5-flash}
+  thresholds:
+    upcoming-km: 1000
+    due-soon-km: 500
+  scoring-weights:
+    maintenance-compliance: 30
+    inspection-results: 30
+    repair-frequency: 20
+    overdue-maintenance: 20

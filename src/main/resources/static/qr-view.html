@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - Digital Vehicle Passport</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      background: #F8F8F8;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .passport-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .passport-header {
+      background: linear-gradient(135deg, #F97316, #EA580C);
+      color: #FFFFFF;
+      padding: 24px;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .passport-body {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-top: none;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+    }
+  </style>
+</head>
+<body>
+  <div class="passport-container">
+    <div class="passport-header">
+      <div>
+        <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;opacity:0.9;">FleetIQ Verified Digital Passport</div>
+        <h1 id="pass-reg" style="font-size:1.8rem;font-weight:800;letter-spacing:-0.5px;margin-top:2px;">Loading...</h1>
+        <div id="pass-model" style="font-size:0.9rem;opacity:0.95;">Vehicle Details</div>
+      </div>
+      <div style="width:54px;height:54px;border-radius:50%;background:#FFFFFF;color:#F97316;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;box-shadow:var(--shadow-sm);" id="pass-health">
+        --
+      </div>
+    </div>
+
+    <div class="passport-body">
+      <!-- Status Notice -->
+      <div id="pass-status-box" style="padding:12px 16px;border-radius:var(--radius-md);margin-bottom:20px;display:flex;align-items:center;gap:12px;font-size:0.88rem;">
+        <i data-lucide="info" style="width:20px;height:20px;"></i>
+        <span id="pass-status-text">Verifying token authenticity...</span>
+      </div>
+
+      <!-- Quick Specs -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+        <div style="background:var(--bg-subtle);padding:12px;border-radius:var(--radius-md);">
+          <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;">Current Odometer</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary);margin-top:2px;" id="pass-odo">-- KM</div>
+        </div>
+
+        <div style="background:var(--bg-subtle);padding:12px;border-radius:var(--radius-md);">
+          <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;">Next Service Due</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary);margin-top:2px;" id="pass-next-svc">-- KM</div>
+        </div>
+      </div>
+
+      <!-- Recent Maintenance -->
+      <div style="margin-bottom:24px;">
+        <h3 style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+          <i data-lucide="sparkles" style="width:16px;height:16px;color:var(--primary-orange);"></i> Recent Scheduled Maintenance
+        </h3>
+        <div id="pass-maint-list" style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:0.82rem;color:var(--text-muted);">Loading maintenance history...</div>
+        </div>
+      </div>
+
+      <!-- Recent Repairs -->
+      <div style="margin-bottom:24px;">
+        <h3 style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+          <i data-lucide="wrench" style="width:16px;height:16px;color:var(--primary-orange);"></i> Recent Repairs
+        </h3>
+        <div id="pass-repair-list" style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:0.82rem;color:var(--text-muted);">Loading repair history...</div>
+        </div>
+      </div>
+
+      <!-- Footer branding -->
+      <div style="text-align:center;padding-top:16px;border-top:1px solid var(--border-color);font-size:0.75rem;color:var(--text-muted);">
+        Verified by FleetIQ Cloud • Read-only authorized profile
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+
+      if (!token) {
+        document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:Inter,sans-serif;"><h3>Invalid or Missing QR Token</h3><p>Please scan a valid FleetIQ vehicle QR code.</p></div>';
+        return;
+      }
+
+      try {
+        const data = await API.get(`/api/qr/public/${token}`);
+
+        document.getElementById('pass-reg').textContent = data.registrationNumber;
+        document.getElementById('pass-model').textContent = `${data.make} ${data.model} (${data.manufactureYear}) • ${data.vehicleType}`;
+        document.getElementById('pass-health').textContent = data.healthScore || 90;
+        document.getElementById('pass-odo').textContent = `${(data.currentOdometer || 0).toLocaleString()} KM`;
+        document.getElementById('pass-next-svc').textContent = `${(data.nextServiceKm || 0).toLocaleString()} KM`;
+
+        const box = document.getElementById('pass-status-box');
+        const text = document.getElementById('pass-status-text');
+
+        if (data.unsafe || data.status === 'UNSAFE') {
+          box.style.background = '#FEE2E2';
+          box.style.color = '#DC2626';
+          text.innerHTML = '<strong>SAFETY GROUNDING NOTICE:</strong> Vehicle flagged as UNSAFE. Prohibited from road dispatch until certified.';
+        } else if (data.status === 'MAINTENANCE_DUE') {
+          box.style.background = '#FEF9C3';
+          box.style.color = '#854D0E';
+          text.innerHTML = '<strong>MAINTENANCE REQUIRED:</strong> Vehicle has reached or is near scheduled service threshold.';
+        } else {
+          box.style.background = '#DCFCE7';
+          box.style.color = '#166534';
+          text.innerHTML = '<strong>OPERATIONAL STATUS:</strong> Vehicle certified safe and active for route dispatch.';
+        }
+
+        // Recent Maintenance
+        const maintList = document.getElementById('pass-maint-list');
+        if (data.recentMaintenance && data.recentMaintenance.length > 0) {
+          maintList.innerHTML = data.recentMaintenance.map(m => `
+            <div style="background:var(--bg-subtle);padding:10px 14px;border-radius:var(--radius-sm);font-size:0.82rem;">
+              <div style="display:flex;justify-content:space-between;font-weight:700;">
+                <span>${m.maintenanceType}</span>
+                <span style="color:var(--text-muted);">${m.serviceDate}</span>
+              </div>
+              <div style="color:var(--text-secondary);margin-top:2px;">${m.workPerformed} • ${(m.odometerKm || 0).toLocaleString()} KM</div>
+            </div>
+          `).join('');
+        } else {
+          maintList.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);">No recent maintenance records.</div>';
+        }
+
+        // Recent Repairs
+        const repList = document.getElementById('pass-repair-list');
+        if (data.recentRepairs && data.recentRepairs.length > 0) {
+          repList.innerHTML = data.recentRepairs.map(r => `
+            <div style="background:var(--bg-subtle);padding:10px 14px;border-radius:var(--radius-sm);font-size:0.82rem;">
+              <div style="display:flex;justify-content:space-between;font-weight:700;">
+                <span>${r.repairCategory} Repair</span>
+                <span style="color:var(--text-muted);">${r.repairDate}</span>
+              </div>
+              <div style="color:var(--text-secondary);margin-top:2px;">${r.problemDescription} (${r.repairStatus})</div>
+            </div>
+          `).join('');
+        } else {
+          repList.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);">No unscheduled breakdowns recorded.</div>';
+        }
+
+        if (window.lucide) lucide.createIcons();
+      } catch (err) {
+        document.body.innerHTML = `<div style="padding:40px;text-align:center;font-family:Inter,sans-serif;color:#DC2626;"><h3>Access Error</h3><p>${err.message}</p></div>`;
+      }
+    });
+  </script>
+</body>
+</html>

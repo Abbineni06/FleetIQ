@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - Daily Vehicle Health Inspection</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .checklist-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      transition: all var(--transition-fast);
+    }
+
+    .checklist-card:hover {
+      border-color: var(--primary-orange);
+    }
+
+    .status-btn-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .status-pill-btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .status-pill-btn.selected-good {
+      background: var(--status-success-bg);
+      border-color: var(--status-success);
+      color: var(--status-success);
+    }
+
+    .status-pill-btn.selected-attention {
+      background: var(--status-warning-bg);
+      border-color: var(--status-warning);
+      color: var(--status-warning);
+    }
+
+    .status-pill-btn.selected-critical {
+      background: var(--status-danger-bg);
+      border-color: var(--status-danger);
+      color: var(--status-danger);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-container"></div>
+
+    <div class="main-container">
+      <div id="header-container" data-title="Daily Inspection" data-breadcrumb="FleetIQ / Monitoring / Inspections"></div>
+
+      <main class="page-content">
+        <!-- Safety Protocol Banner -->
+        <div style="background:var(--light-orange);border:1px solid var(--secondary-orange);border-radius:var(--radius-md);padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:14px;">
+          <div style="color:var(--primary-orange);flex-shrink:0;">
+            <i data-lucide="shield-alert" style="width:24px;height:24px;"></i>
+          </div>
+          <div style="font-size:0.85rem;color:var(--text-primary);line-height:1.4;">
+            <strong>Fleet Safety Enforcement:</strong> Reporting any <strong>CRITICAL</strong> defect flags the vehicle as <strong>UNSAFE</strong> immediately, alerts workshop leadership, and prevents assignment dispatch until certified as repaired.
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns: 1.4fr 1fr;gap:24px;align-items:start;">
+          <!-- Inspection Submission Form -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i data-lucide="clipboard-check" style="color:var(--primary-orange);"></i> 8-Point Pre-Trip Inspection Form</div>
+            </div>
+
+            <form id="inspection-form" onsubmit="handleInspectionSubmit(event)">
+              <div class="form-group">
+                <label class="form-label">Select Vehicle to Inspect *</label>
+                <select id="insp-vehicle-id" class="form-select" required>
+                  <option value="">Choose vehicle...</option>
+                </select>
+              </div>
+
+              <!-- 8 Checklist Items -->
+              <div id="checklist-container">
+                <!-- Injected via JS -->
+              </div>
+
+              <div class="form-group" style="margin-top:16px;">
+                <label class="form-label">Driver General Notes & Observations</label>
+                <textarea id="insp-general-notes" class="form-control" rows="2" placeholder="Describe any noises, leaks, or visual concerns..."></textarea>
+              </div>
+
+              <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+                <button type="submit" class="btn btn-primary" id="btn-submit-insp">
+                  <i data-lucide="check-circle" style="width:16px;height:16px;"></i> Submit Inspection
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Recent Inspection Logs -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i data-lucide="history" style="color:var(--primary-orange);"></i> Recent Submissions</div>
+            </div>
+            <div id="recent-inspections-list" style="display:flex;flex-direction:column;gap:12px;max-height:600px;overflow-y:auto;">
+              <div style="text-align:center;padding:24px;color:var(--text-muted);">Loading inspection logs...</div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/inspections.js"></script>
+</body>
+</html>

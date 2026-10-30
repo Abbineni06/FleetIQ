@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - Fleet Management Dashboard</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-container"></div>
+
+    <div class="main-container">
+      <div id="header-container" data-title="Fleet Overview" data-breadcrumb="FleetIQ / Dashboard"></div>
+
+      <main class="page-content">
+        <!-- Welcome Hero & Quick Actions -->
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:24px;gap:16px;">
+          <div>
+            <h2 id="greeting-title" style="font-size:1.5rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.5px;">
+              Good Morning, Fleet Manager
+            </h2>
+            <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:2px;">
+              Here's what's happening with your fleet today.
+            </p>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:10px;">
+            <a href="/vehicles.html?action=register" class="btn btn-primary btn-sm">
+              <i data-lucide="plus-circle" style="width:16px;height:16px;"></i> Register Vehicle
+            </a>
+            <a href="/fuel.html?action=add" class="btn btn-secondary btn-sm">
+              <i data-lucide="fuel" style="width:16px;height:16px;"></i> Add Fuel Record
+            </a>
+            <a href="/inspections.html?action=new" class="btn btn-secondary btn-sm">
+              <i data-lucide="clipboard-check" style="width:16px;height:16px;"></i> New Inspection
+            </a>
+            <a href="/maintenance.html?action=schedule" class="btn btn-secondary btn-sm">
+              <i data-lucide="calendar" style="width:16px;height:16px;"></i> Schedule Service
+            </a>
+          </div>
+        </div>
+
+        <!-- 6 KPI Summary Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Total Vehicles</span>
+              <div class="kpi-icon orange">
+                <i data-lucide="truck"></i>
+              </div>
+            </div>
+            <div class="kpi-value" id="kpi-total-vehicles">-</div>
+            <div class="kpi-meta"><span style="color:var(--status-success);">● Registered</span> in system</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Active on Road</span>
+              <div class="kpi-icon green">
+                <i data-lucide="check-circle-2"></i>
+              </div>
+            </div>
+            <div class="kpi-value" id="kpi-active-vehicles">-</div>
+            <div class="kpi-meta"><span style="color:var(--status-success);">Operational</span> & assigned</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Maintenance Due</span>
+              <div class="kpi-icon yellow">
+                <i data-lucide="alert-triangle"></i>
+              </div>
+            </div>
+            <div class="kpi-value" id="kpi-due-vehicles">-</div>
+            <div class="kpi-meta"><span style="color:var(--status-warning);">Threshold</span> reached / near</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">In Shop / Repair</span>
+              <div class="kpi-icon red">
+                <i data-lucide="wrench"></i>
+              </div>
+            </div>
+            <div class="kpi-value" id="kpi-shop-vehicles">-</div>
+            <div class="kpi-meta"><span style="color:var(--status-danger);">Active</span> workshop downtime</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Average Fleet Health</span>
+              <div class="kpi-icon blue">
+                <i data-lucide="activity"></i>
+              </div>
+            </div>
+            <div class="kpi-value" id="kpi-avg-health">-</div>
+            <div class="kpi-meta"><span style="color:var(--primary-orange);">Weighted</span> 0-100 score</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Monthly Expenses</span>
+              <div class="kpi-icon orange">
+                <i data-lucide="dollar-sign"></i>
+              </div>
+            </div>
+            <div class="kpi-value" id="kpi-monthly-expenses">-</div>
+            <div class="kpi-meta">Fuel, maintenance & repairs</div>
+          </div>
+        </div>
+
+        <!-- 6 Visual Analytics Charts -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(460px, 1fr));gap:24px;margin-bottom:28px;">
+          <!-- Monthly Maintenance & Repair Cost Comparison -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><i data-lucide="line-chart" style="color:var(--primary-orange);"></i> Maintenance vs Repair Expenses</div>
+                <div class="card-subtitle">Monthly breakdown over the last 6 billing cycles</div>
+              </div>
+            </div>
+            <div style="height:280px;position:relative;">
+              <canvas id="expensesChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Monthly Fuel Expenses -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><i data-lucide="fuel" style="color:var(--primary-orange);"></i> Monthly Fuel Expenditure</div>
+                <div class="card-subtitle">Total refueling costs across all fuel types</div>
+              </div>
+            </div>
+            <div style="height:280px;position:relative;">
+              <canvas id="fuelChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Fleet Health Distribution -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><i data-lucide="pie-chart" style="color:var(--primary-orange);"></i> Vehicle Health Distribution</div>
+                <div class="card-subtitle">Scoring audit breakdown across entire fleet</div>
+              </div>
+            </div>
+            <div style="height:260px;position:relative;">
+              <canvas id="healthDistChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Vehicle Operational Status -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><i data-lucide="truck" style="color:var(--primary-orange);"></i> Fleet Operational Availability</div>
+                <div class="card-subtitle">Active vs Service Due vs In Shop vs Unsafe</div>
+              </div>
+            </div>
+            <div style="height:260px;position:relative;">
+              <canvas id="statusDistChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Predictive Maintenance & Recent Activities -->
+        <div style="display:grid;grid-template-columns: 2fr 1.2fr;gap:24px;margin-bottom:28px;">
+          <!-- Upcoming Maintenance Table -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><i data-lucide="sparkles" style="color:var(--primary-orange);"></i> Upcoming Predictive Maintenance</div>
+                <div class="card-subtitle">Estimated service countdown based on odometer distance</div>
+              </div>
+              <a href="/maintenance.html" class="btn btn-outline btn-sm">View All Predictions</a>
+            </div>
+
+            <div class="table-responsive">
+              <table class="custom-table" id="upcoming-maint-table">
+                <thead>
+                  <tr>
+                    <th>Vehicle</th>
+                    <th>Current KM</th>
+                    <th>Next Svc KM</th>
+                    <th>Remaining</th>
+                    <th>Predicted Date</th>
+                    <th>Urgency</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="upcoming-maint-tbody">
+                  <tr><td colspan="7" style="text-align:center;padding:24px;">Loading maintenance countdowns...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recent Activity Stream -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><i data-lucide="clock" style="color:var(--primary-orange);"></i> Recent Activity Stream</div>
+                <div class="card-subtitle">Live events recorded across all fleet modules</div>
+              </div>
+            </div>
+
+            <div id="recent-activities-list" style="display:flex;flex-direction:column;gap:12px;max-height:420px;overflow-y:auto;">
+              <div style="text-align:center;padding:24px;color:var(--text-muted);">Loading live events...</div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
