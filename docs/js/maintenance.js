@@ -78,17 +78,21 @@ function renderPredictions() {
 
     const avgDaily = p.hasSufficientData && p.avgDailyDistanceKm ? `${p.avgDailyDistanceKm} KM/day` : '<span style="color:var(--text-muted);font-style:italic;">Insufficient history</span>';
 
+    const remKm = (p.remainingKm !== undefined && p.remainingKm !== null)
+      ? p.remainingKm
+      : ((p.nextServiceKm != null && p.currentOdometer != null) ? (p.nextServiceKm - p.currentOdometer) : 0);
+
     let forecast = 'Insufficient data for prediction';
     if (p.hasSufficientData && p.predictedServiceDate) {
       forecast = `<strong>${p.predictedServiceDate}</strong> <span style="font-size:0.75rem;color:var(--text-muted);">(~${p.estimatedDaysRemaining} days)</span>`;
-    } else if (p.remainingKm <= 0) {
+    } else if (remKm <= 0) {
       forecast = `<strong style="color:var(--status-danger);">Immediate Action</strong>`;
     }
 
-    const isOverdue = p.remainingKm <= 0 || p.urgency === 'OVERDUE';
+    const isOverdue = remKm <= 0 || p.urgency === 'OVERDUE';
     const remainingText = isOverdue
-      ? `<span style="color:var(--status-danger);font-weight:700;">${Math.abs(p.remainingKm || 0).toLocaleString()} KM Overdue</span>`
-      : `<span style="font-weight:600;">${(p.remainingKm || 0).toLocaleString()} KM</span>`;
+      ? `<span style="color:var(--status-danger);font-weight:700;">${Math.abs(remKm || 0).toLocaleString()} KM Overdue</span>`
+      : `<span style="font-weight:600;">${(remKm || 0).toLocaleString()} KM</span>`;
 
     return `
       <tr>

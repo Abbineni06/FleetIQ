@@ -142,11 +142,14 @@ function showToast(message, type = 'info', duration = 3500) {
 /**
  * Interactive Client-Side Mock Provider for GitHub Pages static hosting
  */
+/**
+ * Interactive Client-Side Mock Provider for GitHub Pages static hosting
+ */
 function handleGitHubPagesMock(endpoint, options = {}) {
   const method = (options.method || 'GET').toUpperCase();
   const body = options.body ? JSON.parse(options.body) : {};
 
-  // Auth
+  // Auth Login
   if (endpoint.includes('/api/auth/login')) {
     const u = body.username || 'admin';
     let role = 'ROLE_ADMIN';
@@ -154,6 +157,40 @@ function handleGitHubPagesMock(endpoint, options = {}) {
     if (u === 'manager') { role = 'ROLE_MANAGER'; name = 'Sarah Jenkins'; }
     else if (u.startsWith('driver')) { role = 'ROLE_DRIVER'; name = 'David Miller'; }
     return { token: 'gh-mock-jwt-token', userId: 1, username: u, fullName: name, role: role, email: `${u}@fleetiq.io` };
+  }
+
+  // Drivers List
+  if (endpoint.includes('/api/auth/drivers')) {
+    return [
+      { id: 3, username: 'driver1', fullName: 'David Miller', email: 'driver1@fleetiq.io', role: 'ROLE_DRIVER' },
+      { id: 4, username: 'driver2', fullName: 'Elena Gomez', email: 'driver2@fleetiq.io', role: 'ROLE_DRIVER' },
+      { id: 5, username: 'driver3', fullName: 'James Wilson', email: 'driver3@fleetiq.io', role: 'ROLE_DRIVER' }
+    ];
+  }
+
+  // Vehicles dataset (used across dashboard, vehicles, inspections, details, reports)
+  const mockVehicles = [
+    { id: 1, registrationNumber: 'FL-101', vin: '1FT8W3BT9NED12001', make: 'Freightliner', model: 'Cascadia 126', manufactureYear: 2022, vehicleType: 'Heavy Truck', fuelType: 'Diesel', assignedDriverName: 'David Miller', currentOdometer: 82400, lastServiceKm: 75000, serviceIntervalKm: 15000, nextServiceKm: 90000, remainingKm: 7600, status: 'ACTIVE', healthScore: 92, healthCategory: 'Good', registrationDate: '2022-03-15', imageUrl: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80' },
+    { id: 2, registrationNumber: 'FL-102', vin: 'WD3PF4CD6KP088219', make: 'Mercedes-Benz', model: 'Sprinter 3500', manufactureYear: 2023, vehicleType: 'Cargo Van', fuelType: 'Diesel', assignedDriverName: 'Elena Gomez', currentOdometer: 39580, lastServiceKm: 30000, serviceIntervalKm: 10000, nextServiceKm: 40000, remainingKm: 420, status: 'MAINTENANCE_DUE', healthScore: 78, healthCategory: 'Needs Attention', registrationDate: '2023-01-20', imageUrl: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=600&q=80' },
+    { id: 3, registrationNumber: 'FL-103', vin: '1FTYR1Y84MKA44901', make: 'Ford', model: 'Transit-250 High Roof', manufactureYear: 2021, vehicleType: 'Delivery Van', fuelType: 'Gasoline', assignedDriverName: 'James Wilson', currentOdometer: 54200, lastServiceKm: 50000, serviceIntervalKm: 10000, nextServiceKm: 60000, remainingKm: 5800, status: 'ACTIVE', healthScore: 89, healthCategory: 'Good', registrationDate: '2021-06-11', imageUrl: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80' },
+    { id: 4, registrationNumber: 'FL-104', vin: '4UZAC2FC9LC781204', make: 'Isuzu', model: 'NPR-HD Box Truck', manufactureYear: 2020, vehicleType: 'Box Truck', fuelType: 'Diesel', assignedDriverName: 'Unassigned', currentOdometer: 68900, lastServiceKm: 60000, serviceIntervalKm: 10000, nextServiceKm: 70000, remainingKm: 1100, status: 'IN_SHOP', healthScore: 68, healthCategory: 'Needs Attention', registrationDate: '2020-09-05', imageUrl: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=600&q=80' },
+    { id: 5, registrationNumber: 'FL-105', vin: '3C6UR5DL7NE149203', make: 'Ram', model: 'ProMaster 3500', manufactureYear: 2022, vehicleType: 'Cargo Van', fuelType: 'Gasoline', assignedDriverName: 'Unassigned', currentOdometer: 41500, lastServiceKm: 30000, serviceIntervalKm: 10000, nextServiceKm: 40000, remainingKm: -1500, status: 'MAINTENANCE_DUE', healthScore: 64, healthCategory: 'Needs Attention', registrationDate: '2022-04-18', imageUrl: 'https://images.unsplash.com/photo-1586191582056-a19f67a288c1?auto=format&fit=crop&w=600&q=80' },
+    { id: 6, registrationNumber: 'FL-106', vin: '4V4NC9EH5PN892011', make: 'Volvo', model: 'VNL 860 Sleeper', manufactureYear: 2023, vehicleType: 'Heavy Truck', fuelType: 'Diesel', assignedDriverName: 'David Miller', currentOdometer: 115000, lastServiceKm: 105000, serviceIntervalKm: 20000, nextServiceKm: 125000, remainingKm: 10000, status: 'ACTIVE', healthScore: 94, healthCategory: 'Excellent', registrationDate: '2023-02-14', imageUrl: 'https://images.unsplash.com/photo-1506015391300-4802dc74de2e?auto=format&fit=crop&w=600&q=80' },
+    { id: 7, registrationNumber: 'FL-107', vin: '1GC1GUEG5K1189203', make: 'Chevrolet', model: 'Express 3500', manufactureYear: 2019, vehicleType: 'Passenger Van', fuelType: 'Gasoline', assignedDriverName: 'Elena Gomez', currentOdometer: 92100, lastServiceKm: 85000, serviceIntervalKm: 10000, nextServiceKm: 95000, remainingKm: 2900, status: 'UNSAFE', healthScore: 42, healthCategory: 'Poor', registrationDate: '2019-11-20', imageUrl: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80' },
+    { id: 8, registrationNumber: 'FL-108', vin: '1NKDX4EX8PJ902188', make: 'Kenworth', model: 'T680 Next Gen', manufactureYear: 2024, vehicleType: 'Heavy Truck', fuelType: 'Diesel', assignedDriverName: 'James Wilson', currentOdometer: 12000, lastServiceKm: 0, serviceIntervalKm: 15000, nextServiceKm: 15000, remainingKm: 3000, status: 'ACTIVE', healthScore: 98, healthCategory: 'Excellent', registrationDate: '2024-01-10', imageUrl: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80' },
+    { id: 9, registrationNumber: 'BUS-901', vin: '1BZ4TRANSIT99801', make: 'Volvo', model: '7900 Electric City Bus', manufactureYear: 2024, vehicleType: 'Transit / City Bus', fuelType: 'Electric', assignedDriverName: 'David Miller', currentOdometer: 25050, lastServiceKm: 25050, serviceIntervalKm: 5000, nextServiceKm: 30050, remainingKm: 5000, status: 'ACTIVE', healthScore: 96, healthCategory: 'Excellent', registrationDate: '2024-05-01', imageUrl: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=600&q=80' }
+  ];
+
+  // Specific single vehicle
+  const vehicleMatch = endpoint.match(/\/api\/vehicles\/(\d+)/);
+  if (vehicleMatch) {
+    const vid = parseInt(vehicleMatch[1]);
+    return mockVehicles.find(v => v.id === vid) || mockVehicles[0];
+  }
+
+  // Vehicles list
+  if (endpoint === '/api/vehicles' || endpoint.startsWith('/api/vehicles?')) {
+    return mockVehicles;
   }
 
   // Dashboard summary
@@ -199,22 +236,7 @@ function handleGitHubPagesMock(endpoint, options = {}) {
     };
   }
 
-  // Vehicles
-  if (endpoint.includes('/api/vehicles')) {
-    return [
-      { id: 1, registrationNumber: 'FL-101', vin: '1FT8W3BT9NED12001', make: 'Freightliner', model: 'Cascadia 126', manufactureYear: 2022, vehicleType: 'Heavy Truck', fuelType: 'Diesel', assignedDriverName: 'David Miller', currentOdometer: 82400, lastServiceKm: 75000, serviceIntervalKm: 15000, nextServiceKm: 90000, status: 'ACTIVE', healthScore: 92, imageUrl: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80' },
-      { id: 2, registrationNumber: 'FL-102', vin: 'WD3PF4CD6KP088219', make: 'Mercedes-Benz', model: 'Sprinter 3500', manufactureYear: 2023, vehicleType: 'Cargo Van', fuelType: 'Diesel', assignedDriverName: 'Elena Gomez', currentOdometer: 39580, lastServiceKm: 30000, serviceIntervalKm: 10000, nextServiceKm: 40000, status: 'MAINTENANCE_DUE', healthScore: 78, imageUrl: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=600&q=80' },
-      { id: 3, registrationNumber: 'FL-103', vin: '1FTYR1Y84MKA44901', make: 'Ford', model: 'Transit-250 High Roof', manufactureYear: 2021, vehicleType: 'Delivery Van', fuelType: 'Gasoline', assignedDriverName: 'James Wilson', currentOdometer: 54200, lastServiceKm: 50000, serviceIntervalKm: 10000, nextServiceKm: 60000, status: 'ACTIVE', healthScore: 89, imageUrl: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80' },
-      { id: 4, registrationNumber: 'FL-104', vin: '4UZAC2FC9LC781204', make: 'Isuzu', model: 'NPR-HD Box Truck', manufactureYear: 2020, vehicleType: 'Box Truck', fuelType: 'Diesel', assignedDriverName: 'Unassigned', currentOdometer: 68900, lastServiceKm: 60000, serviceIntervalKm: 10000, nextServiceKm: 70000, status: 'IN_SHOP', healthScore: 68, imageUrl: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=600&q=80' },
-      { id: 5, registrationNumber: 'FL-105', vin: '3C6UR5DL7NE149203', make: 'Ram', model: 'ProMaster 3500', manufactureYear: 2022, vehicleType: 'Cargo Van', fuelType: 'Gasoline', assignedDriverName: 'Unassigned', currentOdometer: 41500, lastServiceKm: 30000, serviceIntervalKm: 10000, nextServiceKm: 40000, status: 'MAINTENANCE_DUE', healthScore: 64, imageUrl: 'https://images.unsplash.com/photo-1586191582056-a19f67a288c1?auto=format&fit=crop&w=600&q=80' },
-      { id: 6, registrationNumber: 'FL-106', vin: '4V4NC9EH5PN892011', make: 'Volvo', model: 'VNL 860 Sleeper', manufactureYear: 2023, vehicleType: 'Heavy Truck', fuelType: 'Diesel', assignedDriverName: 'David Miller', currentOdometer: 115000, lastServiceKm: 105000, serviceIntervalKm: 20000, nextServiceKm: 125000, status: 'ACTIVE', healthScore: 94, imageUrl: 'https://images.unsplash.com/photo-1506015391300-4802dc74de2e?auto=format&fit=crop&w=600&q=80' },
-      { id: 7, registrationNumber: 'FL-107', vin: '1GC1GUEG5K1189203', make: 'Chevrolet', model: 'Express 3500', manufactureYear: 2019, vehicleType: 'Passenger Van', fuelType: 'Gasoline', assignedDriverName: 'Elena Gomez', currentOdometer: 92100, lastServiceKm: 85000, serviceIntervalKm: 10000, nextServiceKm: 95000, status: 'UNSAFE', healthScore: 42, imageUrl: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80' },
-      { id: 8, registrationNumber: 'FL-108', vin: '1NKDX4EX8PJ902188', make: 'Kenworth', model: 'T680 Next Gen', manufactureYear: 2024, vehicleType: 'Heavy Truck', fuelType: 'Diesel', assignedDriverName: 'James Wilson', currentOdometer: 12000, lastServiceKm: 0, serviceIntervalKm: 15000, nextServiceKm: 15000, status: 'ACTIVE', healthScore: 98, imageUrl: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80' },
-      { id: 9, registrationNumber: 'BUS-901', vin: '1BZ4TRANSIT99801', make: 'Volvo', model: '7900 Electric City Bus', manufactureYear: 2024, vehicleType: 'Transit / City Bus', fuelType: 'Electric', assignedDriverName: 'David Miller', currentOdometer: 25050, lastServiceKm: 25050, serviceIntervalKm: 5000, nextServiceKm: 30050, status: 'ACTIVE', healthScore: 96, imageUrl: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=600&q=80' }
-    ];
-  }
-
-  // Predictive maintenance
+  // Maintenance Predictions
   if (endpoint.includes('/api/maintenance/predictions')) {
     return [
       { vehicleId: 5, registrationNumber: 'FL-105', vehicleModel: 'Ram ProMaster', currentOdometer: 41500, lastServiceKm: 30000, nextServiceKm: 40000, remainingKm: -1500, avgDailyDistanceKm: 85.0, estimatedDaysRemaining: 0, predictedServiceDate: '2026-10-30', urgency: 'OVERDUE', hasSufficientData: true },
@@ -222,6 +244,108 @@ function handleGitHubPagesMock(endpoint, options = {}) {
       { vehicleId: 9, registrationNumber: 'BUS-901', vehicleModel: 'Volvo 7900 Electric Bus', currentOdometer: 25050, lastServiceKm: 25050, nextServiceKm: 30050, remainingKm: 5000, avgDailyDistanceKm: 180.0, estimatedDaysRemaining: 28, predictedServiceDate: '2026-11-28', urgency: 'NORMAL', hasSufficientData: true },
       { vehicleId: 1, registrationNumber: 'FL-101', vehicleModel: 'Freightliner Cascadia', currentOdometer: 82400, lastServiceKm: 75000, nextServiceKm: 90000, remainingKm: 7600, avgDailyDistanceKm: 120.0, estimatedDaysRemaining: 63, predictedServiceDate: '2026-12-30', urgency: 'NORMAL', hasSufficientData: true }
     ];
+  }
+
+  // Recent Maintenance records
+  if (endpoint.includes('/api/maintenance/recent') || endpoint.includes('/api/maintenance/vehicle')) {
+    return [
+      { id: 1, vehicleId: 9, vehicleRegistration: 'BUS-901', vehicleModel: 'Volvo 7900 Electric Bus', serviceDate: '2026-10-25', maintenanceType: 'PREVENTIVE', odometerKm: 25050, workPerformed: 'High voltage system isolation test, brake regeneration calibration', partsReplaced: 'Cabin HEPA Filter, Inverter Coolant', cost: 650.00, mechanicName: 'Metro Transit Tech' },
+      { id: 2, vehicleId: 1, vehicleRegistration: 'FL-101', vehicleModel: 'Freightliner Cascadia', serviceDate: '2026-09-12', maintenanceType: 'OIL_CHANGE', odometerKm: 75000, workPerformed: 'Full synthetic 15W-40 engine oil swap, lube chassis', partsReplaced: 'Dual Oil Filter, Fuel Filter Water Separator', cost: 420.00, mechanicName: 'Apex Truck Services' },
+      { id: 3, vehicleId: 3, vehicleRegistration: 'FL-103', vehicleModel: 'Ford Transit-250', serviceDate: '2026-08-30', maintenanceType: 'TIRE_ROTATION', odometerKm: 50000, workPerformed: 'Four wheel rotation and alignment verification', partsReplaced: 'Valve stems', cost: 120.00, mechanicName: 'FleetIQ Depot #2' }
+    ];
+  }
+
+  // Fuel Records & Comparison
+  if (endpoint.includes('/api/fuel/comparison')) {
+    return [
+      { registrationNumber: 'FL-101', vehicleModel: 'Freightliner Cascadia', averageKml: 4.2 },
+      { registrationNumber: 'FL-102', vehicleModel: 'Mercedes-Benz Sprinter', averageKml: 9.8 },
+      { registrationNumber: 'FL-103', vehicleModel: 'Ford Transit-250', averageKml: 8.4 },
+      { registrationNumber: 'FL-104', vehicleModel: 'Isuzu NPR-HD', averageKml: 6.5 },
+      { registrationNumber: 'FL-106', vehicleModel: 'Volvo VNL 860', averageKml: 3.9 }
+    ];
+  }
+
+  if (endpoint.includes('/api/fuel')) {
+    return [
+      { id: 1, vehicleId: 1, vehicleRegistration: 'FL-101', fuelDate: '2026-10-29', odometerKm: 82400, fuelQuantity: 180.0, pricePerUnit: 3.85, totalCost: 693.00, fuelType: 'Diesel', stationName: 'Pilot Travel Center #44', mileageKml: 4.1 },
+      { id: 2, vehicleId: 2, vehicleRegistration: 'FL-102', fuelDate: '2026-10-28', odometerKm: 39580, fuelQuantity: 65.0, pricePerUnit: 3.90, totalCost: 253.50, fuelType: 'Diesel', stationName: 'Love\'s #18', mileageKml: 9.8 },
+      { id: 3, vehicleId: 3, vehicleRegistration: 'FL-103', fuelDate: '2026-10-27', odometerKm: 54200, fuelQuantity: 70.0, pricePerUnit: 3.45, totalCost: 241.50, fuelType: 'Gasoline', stationName: 'Shell Express', mileageKml: 8.5 },
+      { id: 4, vehicleId: 6, vehicleRegistration: 'FL-106', fuelDate: '2026-10-30', odometerKm: 115000, fuelQuantity: 120.0, pricePerUnit: 3.88, totalCost: 465.60, fuelType: 'Diesel', stationName: 'TA Travel Center', mileageKml: 3.9 }
+    ];
+  }
+
+  // Repairs
+  if (endpoint.includes('/api/repairs')) {
+    return [
+      { id: 1, vehicleId: 4, vehicleRegistration: 'FL-104', vehicleModel: 'Isuzu NPR-HD', repairDate: '2026-10-28', issueDescription: 'Transmission hard shifting in 2nd gear and check engine light P0700', repairCategory: 'TRANSMISSION', priority: 'HIGH', repairStatus: 'IN_PROGRESS', cost: 1310.00, workshopName: 'Midwest Drivetrain Specialists' },
+      { id: 2, vehicleId: 7, vehicleRegistration: 'FL-107', vehicleModel: 'Chevrolet Express', repairDate: '2026-10-30', issueDescription: 'Steering high-pressure hydraulic line burst; loss of power steering assist', repairCategory: 'STEERING', priority: 'HIGH', repairStatus: 'PENDING', cost: 480.00, workshopName: 'FleetIQ Internal Bay' },
+      { id: 3, vehicleId: 1, vehicleRegistration: 'FL-101', vehicleModel: 'Freightliner Cascadia', repairDate: '2026-09-04', issueDescription: 'Air brake compressor relief valve leakage', repairCategory: 'BRAKES', priority: 'MEDIUM', repairStatus: 'COMPLETED', cost: 650.00, workshopName: 'Apex Truck Services' }
+    ];
+  }
+
+  // Daily Inspections
+  if (endpoint.includes('/api/inspections/recent') || endpoint.includes('/api/inspections/vehicle')) {
+    return [
+      { id: 1, vehicleId: 1, vehicleRegistration: 'FL-101', vehicleModel: 'Freightliner Cascadia', inspectorName: 'David Miller', inspectionDate: '2026-10-30', odometerKm: 82400, overallStatus: 'PASSED', hasCriticalIssue: false, comments: 'Pre-trip checklist 100% verified. Brakes, tires, and lights nominal.' },
+      { id: 2, vehicleId: 7, vehicleRegistration: 'FL-107', vehicleModel: 'Chevrolet Express', inspectorName: 'Elena Gomez', inspectionDate: '2026-10-30', odometerKm: 92100, overallStatus: 'FAILED_UNSAFE', hasCriticalIssue: true, comments: 'Steering fluid leaking heavily onto front axle. Vehicle grounded.' },
+      { id: 3, vehicleId: 2, vehicleRegistration: 'FL-102', vehicleModel: 'Mercedes-Benz Sprinter', inspectorName: 'Elena Gomez', inspectionDate: '2026-10-29', odometerKm: 39580, overallStatus: 'NEEDS_ATTENTION', hasCriticalIssue: false, comments: 'Left rear brake pad lining approaching minimum wear limit.' }
+    ];
+  }
+
+  // Health Summary & Vehicle Health
+  if (endpoint.includes('/api/health/summary')) {
+    return {
+      averageFleetHealth: 81.6,
+      excellentCount: 5,
+      goodCount: 2,
+      needsAttentionCount: 1,
+      poorCount: 0,
+      unsafeCount: 1,
+      vehicleScores: mockVehicles.map(v => ({
+        vehicleId: v.id,
+        vehicleRegistration: v.registrationNumber,
+        vehicleModel: `${v.make} ${v.model}`,
+        overallScore: v.healthScore,
+        category: v.healthCategory,
+        maintenanceScore: v.status === 'MAINTENANCE_DUE' ? 60 : 95,
+        inspectionScore: v.status === 'UNSAFE' ? 20 : 90,
+        repairScore: v.status === 'IN_SHOP' ? 50 : 85,
+        unsafe: v.status === 'UNSAFE',
+        penaltyReasons: v.status === 'UNSAFE' ? ['Critical steering system failure reported during inspection'] : (v.status === 'MAINTENANCE_DUE' ? ['Scheduled service threshold exceeded'] : [])
+      }))
+    };
+  }
+
+  if (endpoint.includes('/api/health/vehicle')) {
+    const vid = parseInt(endpoint.split('/').pop()) || 1;
+    const v = mockVehicles.find(x => x.id === vid) || mockVehicles[0];
+    return {
+      vehicleId: v.id,
+      overallScore: v.healthScore,
+      category: v.healthCategory,
+      maintenanceScore: v.status === 'MAINTENANCE_DUE' ? 55 : 95,
+      inspectionScore: v.status === 'UNSAFE' ? 30 : 92,
+      repairScore: v.status === 'IN_SHOP' ? 50 : 88,
+      unsafe: v.status === 'UNSAFE',
+      penaltyReasons: v.status === 'UNSAFE' ? ['Active critical safety inspection failure'] : (v.status === 'MAINTENANCE_DUE' ? ['Service mileage overdue'] : [])
+    };
+  }
+
+  // QR Code
+  if (endpoint.includes('/api/qr/vehicle')) {
+    const vid = parseInt(endpoint.split('/').pop()) || 1;
+    const v = mockVehicles.find(x => x.id === vid) || mockVehicles[0];
+    return {
+      token: `QR-FI-${v.registrationNumber}-SECURE`,
+      qrCodeBase64: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="%23FFFFFF"/><path d="M20 20h60v60h-60zM30 30v40h40v-40zM40 40h20v20h-20zM120 20h60v60h-60zM130 30v40h40v-40zM140 40h20v20h-20zM20 120h60v60h-60zM30 130v40h40v-40zM40 140h20v20h-20zM120 120h20v20h-20zM160 120h20v20h-20zM140 140h20v20h-20zM120 160h20v20h-20zM160 160h20v20h-20z" fill="%23F97316"/></svg>',
+      registrationNumber: v.registrationNumber,
+      make: v.make,
+      model: v.model,
+      status: v.status,
+      currentOdometer: v.currentOdometer,
+      healthScore: v.healthScore
+    };
   }
 
   // Reports
@@ -239,16 +363,30 @@ function handleGitHubPagesMock(endpoint, options = {}) {
       tableData: [
         { vehicleId: 1, registrationNumber: 'FL-101', model: 'Freightliner Cascadia', type: 'Heavy Truck', status: 'ACTIVE', odometer: '82,400 KM', maintenanceCost: '$780.00', repairCost: '$650.00', fuelCost: '$540.00', totalExpense: '$1,970.00' },
         { vehicleId: 2, registrationNumber: 'FL-102', model: 'Mercedes-Benz Sprinter', type: 'Cargo Van', status: 'MAINTENANCE_DUE', odometer: '39,580 KM', maintenanceCost: '$450.00', repairCost: '$0.00', fuelCost: '$140.00', totalExpense: '$590.00' },
+        { vehicleId: 3, registrationNumber: 'FL-103', model: 'Ford Transit-250', type: 'Delivery Van', status: 'ACTIVE', odometer: '54,200 KM', maintenanceCost: '$250.00', repairCost: '$0.00', fuelCost: '$280.00', totalExpense: '$530.00' },
+        { vehicleId: 4, registrationNumber: 'FL-104', model: 'Isuzu NPR-HD', type: 'Box Truck', status: 'IN_SHOP', odometer: '68,900 KM', maintenanceCost: '$320.00', repairCost: '$1,310.00', fuelCost: '$310.00', totalExpense: '$1,940.00' },
+        { vehicleId: 5, registrationNumber: 'FL-105', model: 'Ram ProMaster 3500', type: 'Cargo Van', status: 'MAINTENANCE_DUE', odometer: '41,500 KM', maintenanceCost: '$680.00', repairCost: '$0.00', fuelCost: '$190.00', totalExpense: '$870.00' },
+        { vehicleId: 6, registrationNumber: 'FL-106', model: 'Volvo VNL 860', type: 'Heavy Truck', status: 'ACTIVE', odometer: '115,000 KM', maintenanceCost: '$510.00', repairCost: '$0.00', fuelCost: '$650.00', totalExpense: '$1,160.00' },
+        { vehicleId: 7, registrationNumber: 'FL-107', model: 'Chevrolet Express', type: 'Passenger Van', status: 'UNSAFE', odometer: '92,100 KM', maintenanceCost: '$0.00', repairCost: '$480.00', fuelCost: '$210.00', totalExpense: '$690.00' },
+        { vehicleId: 8, registrationNumber: 'FL-108', model: 'Kenworth T680', type: 'Heavy Truck', status: 'ACTIVE', odometer: '12,000 KM', maintenanceCost: '$0.00', repairCost: '$0.00', fuelCost: '$310.00', totalExpense: '$310.00' },
         { vehicleId: 9, registrationNumber: 'BUS-901', model: 'Volvo 7900 Electric Bus', type: 'Transit / City Bus', status: 'ACTIVE', odometer: '25,050 KM', maintenanceCost: '$650.00', repairCost: '$0.00', fuelCost: '$0.00', totalExpense: '$650.00' }
       ]
     };
   }
 
-  // AI Chat
+  // AI Chat History & Chat
+  if (endpoint.includes('/api/ai/history')) {
+    return [
+      { role: 'assistant', message: 'Hello! I am your FleetIQ AI Maintenance Assistant. I monitor your entire fleet telemetry, scheduled service windows, fuel performance, and daily inspection flags. How can I assist you today?' }
+    ];
+  }
+
   if (endpoint.includes('/api/ai/chat')) {
     const q = (body.message || '').toLowerCase();
     let reply = "FleetIQ AI Maintenance Engine: Systems nominal across 9 fleet units. Unit FL-105 is currently 1,500 KM overdue for primary service. Unit FL-107 is grounded due to a steering pressure fault.";
-    if (q.includes('bus')) reply = "Unit BUS-901 (Volvo 7900 Electric City Bus) is operating at 96% health with next battery inspection scheduled at 30,050 KM.";
+    if (q.includes('bus') || q.includes('901')) reply = "Unit BUS-901 (Volvo 7900 Electric City Bus) is operating at 96% health. Regenerative braking is operating normally with next battery inspection scheduled at 30,050 KM.";
+    else if (q.includes('fuel') || q.includes('mileage')) reply = "Current fleet average mileage is 7.4 KM/L. Mercedes Sprinter FL-102 leads highway efficiency at 9.8 KM/L, while heavy trucks Cascadia FL-101 and Volvo FL-106 average 4.1 and 3.9 KM/L under heavy load.";
+    else if (q.includes('overdue') || q.includes('service')) reply = "Action item required: Unit FL-105 is currently OVERDUE by 1,500 KM (odometer 41,500 KM vs next service 40,000 KM). Immediate lube and transmission fluid inspection recommended.";
     return { reply: reply, threadId: 'gh-thread-1' };
   }
 
@@ -261,6 +399,29 @@ function handleGitHubPagesMock(endpoint, options = {}) {
       { id: 1, title: 'Service Overdue: FL-105', message: 'Vehicle exceeded 40,000 KM threshold.', priority: 'HIGH', read: false, createdAt: '2026-10-30T10:00:00' },
       { id: 2, title: 'Grounding Override: FL-107', message: 'Power steering defect flagged as UNSAFE.', priority: 'HIGH', read: false, createdAt: '2026-10-30T09:00:00' },
       { id: 3, title: 'Service Due Soon: FL-102', message: 'Within 420 KM of scheduled service.', priority: 'MEDIUM', read: false, createdAt: '2026-10-29T14:00:00' }
+    ];
+  }
+
+  // System Settings
+  if (endpoint.includes('/api/settings')) {
+    return {
+      upcoming_service_threshold_km: 1000,
+      due_soon_threshold_km: 500,
+      weight_maintenance_compliance: 0.35,
+      weight_inspection_results: 0.30,
+      weight_repair_frequency: 0.20,
+      weight_overdue_penalty: 0.15
+    };
+  }
+
+  // User Management
+  if (endpoint.includes('/api/users')) {
+    return [
+      { id: 1, username: 'admin', fullName: 'Alex Morgan', email: 'admin@fleetiq.io', role: 'ROLE_ADMIN', active: true },
+      { id: 2, username: 'manager', fullName: 'Sarah Jenkins', email: 'manager@fleetiq.io', role: 'ROLE_MANAGER', active: true },
+      { id: 3, username: 'driver1', fullName: 'David Miller', email: 'driver1@fleetiq.io', role: 'ROLE_DRIVER', active: true },
+      { id: 4, username: 'driver2', fullName: 'Elena Gomez', email: 'driver2@fleetiq.io', role: 'ROLE_DRIVER', active: true },
+      { id: 5, username: 'driver3', fullName: 'James Wilson', email: 'driver3@fleetiq.io', role: 'ROLE_DRIVER', active: true }
     ];
   }
 

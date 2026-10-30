@@ -85,8 +85,14 @@ function renderOverviewSpecs() {
   const grid = document.getElementById('v-spec-grid');
   if (!grid || !v) return;
 
-  const remaining = v.nextServiceKm - v.currentOdometer;
-  const remainingColor = remaining <= 500 ? 'var(--status-danger)' : 'var(--text-primary)';
+  const remaining = (v.remainingKm !== undefined && v.remainingKm !== null)
+    ? v.remainingKm
+    : ((v.nextServiceKm != null && v.currentOdometer != null) ? (v.nextServiceKm - v.currentOdometer) : 0);
+  const isOverdue = remaining <= 0 || v.status === 'MAINTENANCE_DUE';
+  const remainingColor = (remaining <= 500 || isOverdue) ? 'var(--status-danger)' : 'var(--text-primary)';
+  const remText = isOverdue
+    ? (remaining < 0 ? `${Math.abs(remaining).toLocaleString()} KM OVERDUE` : 'MAINTENANCE DUE')
+    : `${(remaining || 0).toLocaleString()} KM`;
 
   grid.innerHTML = `
     <div class="spec-box">
@@ -107,7 +113,7 @@ function renderOverviewSpecs() {
     </div>
     <div class="spec-box">
       <div class="spec-title">Remaining to Service</div>
-      <div class="spec-val" style="color:${remainingColor};">${remaining.toLocaleString()} KM</div>
+      <div class="spec-val" style="color:${remainingColor};font-weight:700;">${remText}</div>
     </div>
     <div class="spec-box">
       <div class="spec-title">Registration Date</div>

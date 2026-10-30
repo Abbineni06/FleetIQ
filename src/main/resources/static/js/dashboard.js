@@ -265,10 +265,13 @@ function renderUpcomingMaintenance(items) {
     else if (m.urgency === 'DUE_SOON') urgencyBadge = '<span class="badge badge-warning">Due Soon</span>';
     else if (m.urgency === 'UPCOMING') urgencyBadge = '<span class="badge badge-orange">Upcoming</span>';
 
-    const isOverdue = m.remainingKm <= 0 || m.urgency === 'OVERDUE';
+    const remKm = (m.remainingKm !== undefined && m.remainingKm !== null)
+      ? m.remainingKm
+      : ((m.nextServiceKm != null && m.currentOdometer != null) ? (m.nextServiceKm - m.currentOdometer) : 0);
+    const isOverdue = remKm <= 0 || m.urgency === 'OVERDUE';
     const remainingText = isOverdue
-      ? `<span style="color:var(--status-danger);font-weight:700;">${Math.abs(m.remainingKm || 0).toLocaleString()} KM Overdue</span>`
-      : `<span style="font-weight:600;">${(m.remainingKm || 0).toLocaleString()} KM</span>`;
+      ? `<span style="color:var(--status-danger);font-weight:700;">${Math.abs(remKm || 0).toLocaleString()} KM Overdue</span>`
+      : `<span style="font-weight:600;">${(remKm || 0).toLocaleString()} KM</span>`;
 
     const predictedDateStr = isOverdue
       ? `<span style="color:var(--status-danger);font-weight:700;">Immediate</span>`

@@ -247,11 +247,13 @@ public class VehicleService {
             dto.setAssignedDriverId(v.getAssignedDriver().getId());
             dto.setAssignedDriverName(v.getAssignedDriver().getFullName());
         }
-        dto.setCurrentOdometer(v.getCurrentOdometer());
+        int currentKm = v.getCurrentOdometer() != null ? v.getCurrentOdometer() : 0;
+        int nextKm = v.getNextServiceKm() != null ? v.getNextServiceKm() : 0;
+        dto.setCurrentOdometer(currentKm);
         dto.setLastServiceKm(v.getLastServiceKm());
         dto.setServiceIntervalKm(v.getServiceIntervalKm());
-        dto.setNextServiceKm(v.getNextServiceKm());
-        dto.setRemainingKm(v.getNextServiceKm() - v.getCurrentOdometer());
+        dto.setNextServiceKm(nextKm);
+        dto.setRemainingKm(nextKm - currentKm);
         dto.setStatus(v.getStatus());
         dto.setRegistrationDate(v.getRegistrationDate());
         dto.setImageUrl(v.getImageUrl());
