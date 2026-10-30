@@ -90,16 +90,33 @@ public class VehicleService {
         int currentKm = req.getCurrentOdometer() != null ? req.getCurrentOdometer() : 0;
         int lastKm = req.getLastServiceKm() != null ? req.getLastServiceKm() : currentKm;
         int interval = req.getServiceIntervalKm() != null ? req.getServiceIntervalKm() : 10000;
+        int nextKm = lastKm + interval;
+        int remainingKm = nextKm - currentKm;
 
         vehicle.setCurrentOdometer(currentKm);
         vehicle.setLastServiceKm(lastKm);
         vehicle.setServiceIntervalKm(interval);
-        vehicle.setNextServiceKm(lastKm + interval);
+        vehicle.setNextServiceKm(nextKm);
         vehicle.setRegistrationDate(req.getRegistrationDate() != null ? req.getRegistrationDate() : LocalDate.now());
         vehicle.setImageUrl(req.getImageUrl());
-        vehicle.setStatus(VehicleStatus.ACTIVE);
+
+        if (remainingKm <= 0) {
+            vehicle.setStatus(VehicleStatus.MAINTENANCE_DUE);
+        } else {
+            vehicle.setStatus(VehicleStatus.ACTIVE);
+        }
 
         Vehicle saved = vehicleRepository.save(vehicle);
+
+        if (remainingKm <= 0) {
+            notificationService.createNotification(
+                    saved,
+                    NotificationType.OVERDUE_MAINTENANCE,
+                    NotificationPriority.HIGH,
+                    "Immediate Service Due: " + saved.getRegistrationNumber(),
+                    "Vehicle registered with odometer (" + currentKm + " KM) at or exceeding scheduled service threshold (" + nextKm + " KM)."
+            );
+        }
 
         // Record initial odometer
         OdometerReading odo = new OdometerReading();
@@ -139,6 +156,12 @@ public class VehicleService {
         if (req.getServiceIntervalKm() != null && !req.getServiceIntervalKm().equals(vehicle.getServiceIntervalKm())) {
             vehicle.setServiceIntervalKm(req.getServiceIntervalKm());
             vehicle.setNextServiceKm(vehicle.getLastServiceKm() + req.getServiceIntervalKm());
+        }
+
+        if (vehicle.getStatus() == VehicleStatus.ACTIVE && vehicle.getCurrentOdometer() >= vehicle.getNextServiceKm()) {
+            vehicle.setStatus(VehicleStatus.MAINTENANCE_DUE);
+        } else if (vehicle.getStatus() == VehicleStatus.MAINTENANCE_DUE && vehicle.getCurrentOdometer() < vehicle.getNextServiceKm()) {
+            vehicle.setStatus(VehicleStatus.ACTIVE);
         }
 
         Vehicle saved = vehicleRepository.save(vehicle);

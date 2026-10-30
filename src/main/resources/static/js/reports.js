@@ -113,7 +113,7 @@ function renderReportTable(rows) {
   `).join('');
 }
 
-function exportCsvReport() {
+async function exportCsvReport() {
   const type = document.getElementById('report-type').value;
   const range = document.getElementById('report-date-range').value;
   const vehicleId = document.getElementById('report-vehicle-id').value;
@@ -121,6 +121,31 @@ function exportCsvReport() {
   let url = `/api/reports/export?type=${type}&dateRange=${range}`;
   if (vehicleId) url += `&vehicleId=${vehicleId}`;
 
-  window.open(url, '_blank');
-  showToast('Exporting CSV ledger...', 'info');
+  try {
+    showToast('Exporting verified fleet CSV ledger...', 'info');
+    const token = Auth.getToken();
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Export failed with HTTP status ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = `FleetIQ_Ledger_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+    showToast('CSV ledger exported successfully!', 'success');
+  } catch (err) {
+    console.error('CSV Export Error:', err);
+    showToast('Failed to export CSV: ' + err.message, 'danger');
+  }
 }

@@ -9,17 +9,85 @@ let healthDistChartInstance = null;
 let statusDistChartInstance = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Update personalized greeting
-  const user = Auth.getUser();
-  if (user && user.fullName) {
-    const greetingEl = document.getElementById('greeting-title');
-    const hour = new Date().getHours();
-    const timeGreeting = hour < 12 ? 'Good Morning' : (hour < 18 ? 'Good Afternoon' : 'Good Evening');
-    if (greetingEl) greetingEl.textContent = `${timeGreeting}, ${user.fullName}`;
+  // Update personalized greeting & subtitle by role
+  const user = Auth.getUser() || { role: 'ROLE_ADMIN', fullName: 'Fleet User' };
+  const greetingEl = document.getElementById('greeting-title');
+  const subtitleEl = document.getElementById('greeting-subtitle');
+  const hour = new Date().getHours();
+  const timeGreeting = hour < 12 ? 'Good Morning' : (hour < 18 ? 'Good Afternoon' : 'Good Evening');
+
+  if (greetingEl) {
+    greetingEl.textContent = `${timeGreeting}, ${user.fullName || user.username}`;
   }
 
+  if (subtitleEl) {
+    if (user.role === 'ROLE_DRIVER') {
+      subtitleEl.textContent = "Driver Dispatch Hub: Complete pre-trip inspections, record fuel stops, and monitor service countdowns.";
+    } else if (user.role === 'ROLE_MANAGER') {
+      subtitleEl.textContent = "Operations Command: Monitor driver assignments, schedule services, and prevent vehicle downtime.";
+    } else {
+      subtitleEl.textContent = "Enterprise Fleet Overview: Real-time predictive maintenance, health scoring, and financial operations.";
+    }
+  }
+
+  renderQuickActions(user.role);
   loadDashboardData();
 });
+
+function renderQuickActions(role) {
+  const container = document.getElementById('dashboard-actions');
+  if (!container) return;
+
+  if (role === 'ROLE_DRIVER') {
+    container.innerHTML = `
+      <a href="/inspections.html?action=new" class="btn btn-primary btn-sm">
+        <i data-lucide="clipboard-check" style="width:16px;height:16px;"></i> Pre-Trip Inspection
+      </a>
+      <a href="/fuel.html?action=add" class="btn btn-secondary btn-sm">
+        <i data-lucide="fuel" style="width:16px;height:16px;"></i> Log Fuel Stop
+      </a>
+      <a href="/maintenance.html" class="btn btn-secondary btn-sm">
+        <i data-lucide="sparkles" style="width:16px;height:16px;"></i> Service Countdown
+      </a>
+      <a href="/qr-history.html" class="btn btn-secondary btn-sm">
+        <i data-lucide="qr-code" style="width:16px;height:16px;"></i> My QR Pass
+      </a>
+    `;
+  } else if (role === 'ROLE_MANAGER') {
+    container.innerHTML = `
+      <a href="/vehicles.html" class="btn btn-primary btn-sm">
+        <i data-lucide="users" style="width:16px;height:16px;"></i> Assign Drivers
+      </a>
+      <a href="/maintenance.html?action=schedule" class="btn btn-secondary btn-sm">
+        <i data-lucide="calendar" style="width:16px;height:16px;"></i> Schedule Maintenance
+      </a>
+      <a href="/repairs.html" class="btn btn-secondary btn-sm">
+        <i data-lucide="wrench" style="width:16px;height:16px;"></i> Workshop Repairs
+      </a>
+      <a href="/inspections.html" class="btn btn-secondary btn-sm">
+        <i data-lucide="clipboard-check" style="width:16px;height:16px;"></i> Inspect Fleet
+      </a>
+    `;
+  } else {
+    // Admin
+    container.innerHTML = `
+      <a href="/vehicles.html?action=register" class="btn btn-primary btn-sm">
+        <i data-lucide="plus-circle" style="width:16px;height:16px;"></i> Register Vehicle
+      </a>
+      <a href="/maintenance.html?action=schedule" class="btn btn-secondary btn-sm">
+        <i data-lucide="calendar" style="width:16px;height:16px;"></i> Schedule Service
+      </a>
+      <a href="/fuel.html?action=add" class="btn btn-secondary btn-sm">
+        <i data-lucide="fuel" style="width:16px;height:16px;"></i> Add Fuel Record
+      </a>
+      <a href="/reports.html" class="btn btn-secondary btn-sm">
+        <i data-lucide="bar-chart-3" style="width:16px;height:16px;"></i> Executive Ledger
+      </a>
+    `;
+  }
+
+  if (window.lucide) lucide.createIcons();
+}
 
 async function loadDashboardData() {
   try {

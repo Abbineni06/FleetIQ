@@ -22,27 +22,14 @@
         <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:24px;gap:16px;">
           <div>
             <h2 id="greeting-title" style="font-size:1.5rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.5px;">
-              Good Morning, Fleet Manager
+              Good Morning, Fleet User
             </h2>
-            <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:2px;">
+            <p id="greeting-subtitle" style="color:var(--text-secondary);font-size:0.9rem;margin-top:2px;">
               Here's what's happening with your fleet today.
             </p>
           </div>
 
-          <div style="display:flex;flex-wrap:wrap;gap:10px;">
-            <a href="/vehicles.html?action=register" class="btn btn-primary btn-sm">
-              <i data-lucide="plus-circle" style="width:16px;height:16px;"></i> Register Vehicle
-            </a>
-            <a href="/fuel.html?action=add" class="btn btn-secondary btn-sm">
-              <i data-lucide="fuel" style="width:16px;height:16px;"></i> Add Fuel Record
-            </a>
-            <a href="/inspections.html?action=new" class="btn btn-secondary btn-sm">
-              <i data-lucide="clipboard-check" style="width:16px;height:16px;"></i> New Inspection
-            </a>
-            <a href="/maintenance.html?action=schedule" class="btn btn-secondary btn-sm">
-              <i data-lucide="calendar" style="width:16px;height:16px;"></i> Schedule Service
-            </a>
-          </div>
+          <div id="dashboard-actions" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
         </div>
 
         <!-- 6 KPI Summary Cards -->

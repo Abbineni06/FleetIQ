@@ -42,19 +42,37 @@ public class ReportService {
 
         report.setTotalVehicles(vehicles.size());
 
-        BigDecimal totalMaint = maintenanceRepository.sumTotalCost();
-        BigDecimal totalRepair = repairRepository.sumTotalCost();
-        BigDecimal totalFuel = fuelRepository.sumTotalCost();
+        BigDecimal totalMaint;
+        BigDecimal totalRepair;
+        BigDecimal totalFuel;
+
+        if (vehicleId != null) {
+            totalMaint = maintenanceRepository.sumCostByVehicleId(vehicleId);
+            totalRepair = repairRepository.sumCostByVehicleId(vehicleId);
+            totalFuel = fuelRepository.sumCostByVehicleId(vehicleId);
+
+            Double avgMileage = fuelRepository.averageMileageByVehicleId(vehicleId);
+            report.setAvgFleetMileage(avgMileage != null ? Math.round(avgMileage * 100.0) / 100.0 : 0.0);
+
+            Optional<VehicleHealthScore> latestScore = vehicleRepository.findById(vehicleId)
+                    .flatMap(healthRepository::findTopByVehicleOrderByCalculatedAtDesc);
+            report.setAvgFleetHealth(latestScore.map(s -> (double) s.getOverallScore()).orElse(85.0));
+        } else {
+            totalMaint = maintenanceRepository.sumTotalCost();
+            totalRepair = repairRepository.sumTotalCost();
+            totalFuel = fuelRepository.sumTotalCost();
+
+            Double avgMileage = fuelRepository.averageFleetMileage();
+            report.setAvgFleetMileage(avgMileage != null ? Math.round(avgMileage * 100.0) / 100.0 : 0.0);
+
+            Double avgHealth = healthRepository.findAverageFleetHealthScore();
+            report.setAvgFleetHealth(avgHealth != null ? Math.round(avgHealth * 10.0) / 10.0 : 88.0);
+        }
+
         report.setTotalMaintenanceCost(totalMaint);
         report.setTotalRepairCost(totalRepair);
         report.setTotalFuelCost(totalFuel);
         report.setTotalFleetCost(totalMaint.add(totalRepair).add(totalFuel));
-
-        Double avgMileage = fuelRepository.averageFleetMileage();
-        report.setAvgFleetMileage(avgMileage != null ? Math.round(avgMileage * 100.0) / 100.0 : 0.0);
-
-        Double avgHealth = healthRepository.findAverageFleetHealthScore();
-        report.setAvgFleetHealth(avgHealth != null ? Math.round(avgHealth * 10.0) / 10.0 : 88.0);
 
         List<Map<String, Object>> rows = new ArrayList<>();
         List<String> chartLabels = new ArrayList<>();
