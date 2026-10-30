@@ -54,7 +54,7 @@ const Auth = {
   logout() {
     localStorage.removeItem('fleetiq_token');
     localStorage.removeItem('fleetiq_user');
-    window.location.href = '/login.html';
+    window.location.href = 'login.html';
   },
 
   checkAuth(allowedRoles = []) {
@@ -62,12 +62,12 @@ const Auth = {
     const isPublicPage = path.includes('login.html') || path.includes('qr-view.html') || path === '/';
 
     if (!this.isAuthenticated() && !isPublicPage) {
-      window.location.href = '/login.html';
+      window.location.href = 'login.html';
       return false;
     }
 
     if (this.isAuthenticated() && path.includes('login.html')) {
-      window.location.href = '/dashboard.html';
+      window.location.href = 'dashboard.html';
       return false;
     }
 

@@ -78,7 +78,7 @@ function renderRepairsTable(repairs) {
     return `
       <tr>
         <td>
-          <a href="/vehicle-details.html?id=${r.vehicleId}" style="font-weight:700;color:var(--primary-orange);">
+          <a href="vehicle-details.html?id=${r.vehicleId}" style="font-weight:700;color:var(--primary-orange);">
             ${escapeHtml(r.vehicleRegistration)}
           </a>
           <div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(r.vehicleModel)}</div>

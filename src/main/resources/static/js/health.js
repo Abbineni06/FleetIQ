@@ -52,7 +52,7 @@ function renderHealthTable(scores) {
     return `
       <tr>
         <td>
-          <a href="/vehicle-details.html?id=${h.vehicleId}" style="font-weight:700;color:var(--text-primary);font-size:0.95rem;">
+          <a href="vehicle-details.html?id=${h.vehicleId}" style="font-weight:700;color:var(--text-primary);font-size:0.95rem;">
             ${escapeHtml(h.vehicleRegistration)}
           </a>
           <div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(h.vehicleModel)}</div>

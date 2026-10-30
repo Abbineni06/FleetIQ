@@ -57,34 +57,34 @@ function getNavItemsForRole(role, currentPath) {
   if (role === 'ROLE_DRIVER') {
     return `
       <div class="nav-section-title">Driver Operations</div>
-      <a href="/dashboard.html" class="nav-item ${currentPath.includes('dashboard.html') ? 'active' : ''}">
+      <a href="dashboard.html" class="nav-item ${currentPath.includes('dashboard.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
         <span class="nav-text">Driver Hub</span>
       </a>
-      <a href="/inspections.html" class="nav-item ${currentPath.includes('inspections.html') ? 'active' : ''}">
+      <a href="inspections.html" class="nav-item ${currentPath.includes('inspections.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="clipboard-check"></i></span>
         <span class="nav-text">Pre-Trip Inspection</span>
       </a>
-      <a href="/fuel.html" class="nav-item ${currentPath.includes('fuel.html') ? 'active' : ''}">
+      <a href="fuel.html" class="nav-item ${currentPath.includes('fuel.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="fuel"></i></span>
         <span class="nav-text">Fuel Stop Log</span>
       </a>
-      <a href="/maintenance.html" class="nav-item ${currentPath.includes('maintenance.html') ? 'active' : ''}">
+      <a href="maintenance.html" class="nav-item ${currentPath.includes('maintenance.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="sparkles"></i></span>
         <span class="nav-text">Service Countdown</span>
       </a>
-      <a href="/qr-history.html" class="nav-item ${currentPath.includes('qr-history.html') ? 'active' : ''}">
+      <a href="qr-history.html" class="nav-item ${currentPath.includes('qr-history.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="qr-code"></i></span>
         <span class="nav-text">Vehicle QR Pass</span>
       </a>
 
       <div class="nav-section-title">Support & Alerts</div>
-      <a href="/ai-assistant.html" class="nav-item ${currentPath.includes('ai-assistant.html') ? 'active' : ''}">
+      <a href="ai-assistant.html" class="nav-item ${currentPath.includes('ai-assistant.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="bot"></i></span>
         <span class="nav-text">AI Assistant</span>
         <span class="nav-badge" style="background:var(--primary-orange);">AI</span>
       </a>
-      <a href="/notifications.html" class="nav-item ${currentPath.includes('notifications.html') ? 'active' : ''}">
+      <a href="notifications.html" class="nav-item ${currentPath.includes('notifications.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="bell"></i></span>
         <span class="nav-text">Notifications</span>
         <span class="nav-badge" id="sidebar-notif-count" style="display:none;">0</span>
@@ -95,58 +95,58 @@ function getNavItemsForRole(role, currentPath) {
   if (role === 'ROLE_MANAGER') {
     return `
       <div class="nav-section-title">Operations</div>
-      <a href="/dashboard.html" class="nav-item ${currentPath.includes('dashboard.html') ? 'active' : ''}">
+      <a href="dashboard.html" class="nav-item ${currentPath.includes('dashboard.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
         <span class="nav-text">Operations Dashboard</span>
       </a>
 
       <div class="nav-section-title">Fleet Dispatch</div>
-      <a href="/vehicles.html" class="nav-item ${currentPath.includes('vehicles.html') || currentPath.includes('vehicle-details.html') ? 'active' : ''}">
+      <a href="vehicles.html" class="nav-item ${currentPath.includes('vehicles.html') || currentPath.includes('vehicle-details.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="truck"></i></span>
         <span class="nav-text">Vehicles & Drivers</span>
       </a>
-      <a href="/qr-history.html" class="nav-item ${currentPath.includes('qr-history.html') ? 'active' : ''}">
+      <a href="qr-history.html" class="nav-item ${currentPath.includes('qr-history.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="qr-code"></i></span>
         <span class="nav-text">QR Vehicle Passports</span>
       </a>
 
       <div class="nav-section-title">Maintenance</div>
-      <a href="/maintenance.html" class="nav-item ${currentPath.includes('maintenance.html') ? 'active' : ''}">
+      <a href="maintenance.html" class="nav-item ${currentPath.includes('maintenance.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="sparkles"></i></span>
         <span class="nav-text">Predictive Service</span>
       </a>
-      <a href="/repairs.html" class="nav-item ${currentPath.includes('repairs.html') ? 'active' : ''}">
+      <a href="repairs.html" class="nav-item ${currentPath.includes('repairs.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="wrench"></i></span>
         <span class="nav-text">Repair Tracker</span>
       </a>
 
       <div class="nav-section-title">Monitoring</div>
-      <a href="/fuel.html" class="nav-item ${currentPath.includes('fuel.html') ? 'active' : ''}">
+      <a href="fuel.html" class="nav-item ${currentPath.includes('fuel.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="fuel"></i></span>
         <span class="nav-text">Fuel Analytics</span>
       </a>
-      <a href="/inspections.html" class="nav-item ${currentPath.includes('inspections.html') ? 'active' : ''}">
+      <a href="inspections.html" class="nav-item ${currentPath.includes('inspections.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="clipboard-check"></i></span>
         <span class="nav-text">Daily Inspections</span>
       </a>
-      <a href="/health.html" class="nav-item ${currentPath.includes('health.html') ? 'active' : ''}">
+      <a href="health.html" class="nav-item ${currentPath.includes('health.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="activity"></i></span>
         <span class="nav-text">Health Scores</span>
       </a>
 
       <div class="nav-section-title">Intelligence & Reports</div>
-      <a href="/ai-assistant.html" class="nav-item ${currentPath.includes('ai-assistant.html') ? 'active' : ''}">
+      <a href="ai-assistant.html" class="nav-item ${currentPath.includes('ai-assistant.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="bot"></i></span>
         <span class="nav-text">AI Assistant</span>
         <span class="nav-badge" style="background:var(--primary-orange);">AI</span>
       </a>
-      <a href="/reports.html" class="nav-item ${currentPath.includes('reports.html') ? 'active' : ''}">
+      <a href="reports.html" class="nav-item ${currentPath.includes('reports.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="bar-chart-3"></i></span>
         <span class="nav-text">Fleet Reports</span>
       </a>
 
       <div class="nav-section-title">Alerts</div>
-      <a href="/notifications.html" class="nav-item ${currentPath.includes('notifications.html') ? 'active' : ''}">
+      <a href="notifications.html" class="nav-item ${currentPath.includes('notifications.html') ? 'active' : ''}">
         <span class="nav-icon"><i data-lucide="bell"></i></span>
         <span class="nav-text">Notifications</span>
         <span class="nav-badge" id="sidebar-notif-count" style="display:none;">0</span>
@@ -157,63 +157,63 @@ function getNavItemsForRole(role, currentPath) {
   // ROLE_ADMIN: Total Access
   return `
     <div class="nav-section-title">Executive Overview</div>
-    <a href="/dashboard.html" class="nav-item ${currentPath.includes('dashboard.html') ? 'active' : ''}">
+    <a href="dashboard.html" class="nav-item ${currentPath.includes('dashboard.html') ? 'active' : ''}">
       <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
       <span class="nav-text">Admin Dashboard</span>
     </a>
 
     <div class="nav-section-title">Fleet Management</div>
-    <a href="/vehicles.html" class="nav-item ${currentPath.includes('vehicles.html') || currentPath.includes('vehicle-details.html') ? 'active' : ''}">
+    <a href="vehicles.html" class="nav-item ${currentPath.includes('vehicles.html') || currentPath.includes('vehicle-details.html') ? 'active' : ''}">
       <span class="nav-icon"><i data-lucide="truck"></i></span>
       <span class="nav-text">All Vehicles</span>
     </a>
-    <a href="/qr-history.html" class="nav-item ${currentPath.includes('qr-history.html') ? 'active' : ''}">
+    <a href="qr-history.html" class="nav-item ${currentPath.includes('qr-history.html') ? 'active' : ''}">
       <span class="nav-icon"><i data-lucide="qr-code"></i></span>
       <span class="nav-text">QR Vehicle History</span>
     </a>
 
     <div class="nav-section-title">Maintenance & Workshop</div>
-    <a href="/maintenance.html" class="nav-item ${currentPath.includes('maintenance.html') ? 'active' : ''}">
+    <a href="maintenance.html" class="nav-item ${currentPath.includes('maintenance.html') ? 'active' : ''}">
       <span class="nav-icon"><i data-lucide="sparkles"></i></span>
       <span class="nav-text">Predictive Service</span>
     </a>
-    <a href="/repairs.html" class="nav-item ${currentPath.includes('repairs.html') ? 'active' : ''}">
+    <a href="repairs.html" class="nav-item ${currentPath.includes('repairs.html') ? 'active' : ''}">
       <span class="nav-icon"><i data-lucide="wrench"></i></span>
       <span class="nav-text">Repair Tracker</span>
     </a>
 
     <div class="nav-section-title">Monitoring & Telematics</div>
-    <a href="/fuel.html" class="nav-item ${currentPath.includes('fuel.html') ? 'active' : ''}">
+    <a href="fuel.html" class="nav-item ${currentPath.includes('fuel.html') ? 'active' : ''}">
       <span class="nav-icon"><i data-lucide="fuel"></i></span>
       <span class="nav-text">Fuel Analytics</span>
     </a>
-    <a href="/inspections.html" class="nav-item ${currentPath.includes('inspections.html') ? 'active' : ''}">
+    <a href="inspections.html" class="nav-item ${currentPath.includes('inspections.html') ? 'active' : ''}">
       <span class="nav-icon"><i data-lucide="clipboard-check"></i></span>
       <span class="nav-text">Daily Inspection</span>
     </a>
-    <a href="/health.html" class="nav-item ${currentPath.includes('health.html') ? 'active' : ''}">
+    <a href="health.html" class="nav-item ${currentPath.includes('health.html') ? 'active' : ''}">
       <span class="nav-icon"><i data-lucide="activity"></i></span>
       <span class="nav-text">Health Scores</span>
     </a>
 
     <div class="nav-section-title">Intelligence & Financials</div>
-    <a href="/ai-assistant.html" class="nav-item ${currentPath.includes('ai-assistant.html') ? 'active' : ''}">
+    <a href="ai-assistant.html" class="nav-item ${currentPath.includes('ai-assistant.html') ? 'active' : ''}">
       <span class="nav-icon"><i data-lucide="bot"></i></span>
       <span class="nav-text">AI Assistant</span>
       <span class="nav-badge" style="background:var(--primary-orange);">AI</span>
     </a>
-    <a href="/reports.html" class="nav-item ${currentPath.includes('reports.html') ? 'active' : ''}">
+    <a href="reports.html" class="nav-item ${currentPath.includes('reports.html') ? 'active' : ''}">
       <span class="nav-icon"><i data-lucide="bar-chart-3"></i></span>
       <span class="nav-text">Reports & Ledger</span>
     </a>
 
     <div class="nav-section-title">System Administration</div>
-    <a href="/notifications.html" class="nav-item ${currentPath.includes('notifications.html') ? 'active' : ''}">
+    <a href="notifications.html" class="nav-item ${currentPath.includes('notifications.html') ? 'active' : ''}">
       <span class="nav-icon"><i data-lucide="bell"></i></span>
       <span class="nav-text">Notifications</span>
       <span class="nav-badge" id="sidebar-notif-count" style="display:none;">0</span>
     </a>
-    <a href="/settings.html" class="nav-item ${currentPath.includes('settings.html') ? 'active' : ''}">
+    <a href="settings.html" class="nav-item ${currentPath.includes('settings.html') ? 'active' : ''}">
       <span class="nav-icon"><i data-lucide="settings"></i></span>
       <span class="nav-text">Settings & Rules</span>
     </a>
@@ -238,7 +238,7 @@ function renderSidebar(container) {
   container.innerHTML = `
     <aside class="sidebar ${isCollapsed ? 'collapsed' : ''}" id="app-sidebar">
       <div class="sidebar-header">
-        <a href="/dashboard.html" class="brand-logo">
+        <a href="dashboard.html" class="brand-logo">
           <div class="brand-icon">
             <i data-lucide="shield-check" style="width:20px;height:20px;"></i>
           </div>
@@ -330,7 +330,7 @@ function renderHeader(container) {
           <div class="notification-dropdown" id="notification-dropdown">
             <div class="notif-header">
               <span style="font-weight:700;font-size:0.9rem;">Fleet Alerts</span>
-              <a href="/notifications.html" style="font-size:0.75rem;font-weight:600;">View All</a>
+              <a href="notifications.html" style="font-size:0.75rem;font-weight:600;">View All</a>
             </div>
             <div class="notif-list" id="notif-dropdown-list">
               <div style="padding:16px;text-align:center;color:var(--text-muted);font-size:0.85rem;">Loading alerts...</div>
@@ -341,7 +341,7 @@ function renderHeader(container) {
           </div>
         </div>
 
-        <div class="user-avatar" style="cursor:pointer;" onclick="window.location.href='/settings.html'" title="User Profile">
+        <div class="user-avatar" style="cursor:pointer;" onclick="window.location.href='settings.html'" title="User Profile">
           <i data-lucide="user" style="width:18px;height:18px;"></i>
         </div>
       </div>
@@ -439,7 +439,7 @@ function openNotificationDetail(notifId, vehicleId) {
     if (vehicleId) {
       window.location.href = `/vehicle-details.html?id=${vehicleId}`;
     } else {
-      window.location.href = '/notifications.html';
+      window.location.href = 'notifications.html';
     }
   });
 }

@@ -93,7 +93,7 @@ function renderPredictions() {
     return `
       <tr>
         <td>
-          <a href="/vehicle-details.html?id=${p.vehicleId}" style="font-weight:700;color:var(--text-primary);">
+          <a href="vehicle-details.html?id=${p.vehicleId}" style="font-weight:700;color:var(--text-primary);">
             ${escapeHtml(p.registrationNumber)}
           </a>
           <div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(p.vehicleModel)}</div>
@@ -130,7 +130,7 @@ async function loadRecentMaintenance() {
       <tr>
         <td style="font-weight:600;">${m.serviceDate}</td>
         <td>
-          <a href="/vehicle-details.html?id=${m.vehicleId}" style="font-weight:700;color:var(--primary-orange);">
+          <a href="vehicle-details.html?id=${m.vehicleId}" style="font-weight:700;color:var(--primary-orange);">
             ${escapeHtml(m.vehicleRegistration)}
           </a>
           <div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(m.vehicleModel)}</div>

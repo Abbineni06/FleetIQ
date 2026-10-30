@@ -108,7 +108,7 @@ function renderVehiclesTable(vehicles) {
           <div style="display:flex;align-items:center;gap:12px;">
             <img src="${thumb}" alt="${escapeHtml(v.model)}" style="width:48px;height:36px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border-color);" onerror="this.src='${defaultImg}'" />
             <div>
-              <a href="/vehicle-details.html?id=${v.id}" style="font-weight:700;color:var(--text-primary);font-size:0.95rem;">
+              <a href="vehicle-details.html?id=${v.id}" style="font-weight:700;color:var(--text-primary);font-size:0.95rem;">
                 ${escapeHtml(v.registrationNumber)}
               </a>
               <div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(v.make)} ${escapeHtml(v.model)} (${v.manufactureYear})</div>
@@ -147,10 +147,10 @@ function renderVehiclesTable(vehicles) {
         <td>${statusBadge}</td>
         <td>
           <div style="display:flex;align-items:center;gap:6px;">
-            <a href="/vehicle-details.html?id=${v.id}" class="btn btn-sm btn-secondary" title="View Full Details">
+            <a href="vehicle-details.html?id=${v.id}" class="btn btn-sm btn-secondary" title="View Full Details">
               <i data-lucide="eye" style="width:14px;height:14px;"></i>
             </a>
-            <a href="/vehicle-details.html?id=${v.id}&tab=qr" class="btn btn-sm btn-secondary" title="View QR Code">
+            <a href="vehicle-details.html?id=${v.id}&tab=qr" class="btn btn-sm btn-secondary" title="View QR Code">
               <i data-lucide="qr-code" style="width:14px;height:14px;"></i>
             </a>
             <button class="btn btn-sm btn-secondary" title="Edit Vehicle" onclick="editVehicle(${v.id})">

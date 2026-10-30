@@ -125,7 +125,7 @@ async function loadRecentInspections() {
       return `
         <div style="background:var(--bg-subtle);border-radius:var(--radius-md);padding:14px;border:1px solid var(--border-light);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <a href="/vehicle-details.html?id=${i.vehicleId}" style="font-weight:700;color:var(--text-primary);font-size:0.92rem;">
+            <a href="vehicle-details.html?id=${i.vehicleId}" style="font-weight:700;color:var(--text-primary);font-size:0.92rem;">
               ${escapeHtml(i.vehicleRegistration)}
             </a>
             ${statusBadge}

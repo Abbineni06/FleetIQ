@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!currentVehicleId) {
     showToast('No vehicle ID specified', 'danger');
-    window.location.href = '/vehicles.html';
+    window.location.href = 'vehicles.html';
     return;
   }
 

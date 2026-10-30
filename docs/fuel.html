@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - Fuel Analytics & Mileage</title>
+  <link rel="stylesheet" href="css/theme.css?v=2.0">
+  <link rel="stylesheet" href="css/layout.css?v=2.0">
+  <link rel="stylesheet" href="css/components.css?v=2.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-container"></div>
+
+    <div class="main-container">
+      <div id="header-container" data-title="Fuel Monitoring" data-breadcrumb="FleetIQ / Monitoring / Fuel"></div>
+
+      <main class="page-content">
+        <!-- Top Toolbar -->
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:24px;gap:16px;">
+          <div>
+            <h2 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">Fuel Analytics & Consumption</h2>
+            <p style="color:var(--text-secondary);font-size:0.88rem;margin-top:2px;">
+              Track fuel refills, calculate accurate KM/L mileage, and detect unusual consumption spikes.
+            </p>
+          </div>
+
+          <button class="btn btn-primary" onclick="openAddFuelModal()">
+            <i data-lucide="plus-circle" style="width:16px;height:16px;"></i> Log Refill Record
+          </button>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Fleet Avg Mileage</span>
+              <div class="kpi-icon green"><i data-lucide="gauge"></i></div>
+            </div>
+            <div class="kpi-value" id="kpi-avg-kml">-</div>
+            <div class="kpi-meta">Calculated KM/L</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Total Fuel Logged</span>
+              <div class="kpi-icon blue"><i data-lucide="droplet"></i></div>
+            </div>
+            <div class="kpi-value" id="kpi-total-litres">-</div>
+            <div class="kpi-meta">Litres consumed</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Total Fuel Expense</span>
+              <div class="kpi-icon orange"><i data-lucide="dollar-sign"></i></div>
+            </div>
+            <div class="kpi-value" id="kpi-total-fuel-cost">-</div>
+            <div class="kpi-meta">Historical expenditure</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Avg Fuel Price</span>
+              <div class="kpi-icon yellow"><i data-lucide="trending-up"></i></div>
+            </div>
+            <div class="kpi-value" id="kpi-avg-price">-</div>
+            <div class="kpi-meta">Per litre</div>
+          </div>
+        </div>
+
+        <!-- Fuel Comparison Chart -->
+        <div class="card" style="margin-bottom:28px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i data-lucide="bar-chart-2" style="color:var(--primary-orange);"></i> Vehicle Fuel Efficiency Comparison</div>
+              <div class="card-subtitle">KM/L performance across all active fleet vehicles</div>
+            </div>
+          </div>
+          <div style="height:280px;position:relative;">
+            <canvas id="fuelComparisonChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Fuel Log Records Table -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i data-lucide="list" style="color:var(--primary-orange);"></i> Historical Refill Records</div>
+          </div>
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Vehicle</th>
+                  <th>Odometer</th>
+                  <th>Quantity (L)</th>
+                  <th>Price/L</th>
+                  <th>Total Cost</th>
+                  <th>Gas Station</th>
+                  <th>Tank Status</th>
+                  <th>Mileage</th>
+                </tr>
+              </thead>
+              <tbody id="fuel-records-tbody">
+                <tr><td colspan="9" style="text-align:center;padding:28px;">Loading fuel logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Add Fuel Modal -->
+  <div class="modal-overlay" id="fuel-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="fuel" style="color:var(--primary-orange);"></i> Add Fuel Log</h3>
+        <button class="modal-close" onclick="closeAddFuelModal()"><i data-lucide="x"></i></button>
+      </div>
+
+      <form id="fuel-form" onsubmit="handleFuelSubmit(event)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Vehicle *</label>
+            <select id="fuel-vehicle-id" class="form-select" required onchange="updateFuelCurrentOdo()">
+              <option value="">Select vehicle...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Date *</label>
+            <input type="date" id="fuel-date" class="form-control" required />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Odometer Reading (KM) *</label>
+            <input type="number" id="fuel-odometer" class="form-control" required />
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Current: <span id="fuel-current-odo-hint">--</span> KM</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Fuel Station</label>
+            <input type="text" id="fuel-station" class="form-control" placeholder="e.g. Shell Express #21" />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Quantity (Litres) *</label>
+            <input type="number" step="0.01" id="fuel-qty" class="form-control" placeholder="e.g. 75.0" required oninput="calculateTotalFuelCost()" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Price per Litre ($) *</label>
+            <input type="number" step="0.01" id="fuel-price" class="form-control" placeholder="e.g. 1.30" required oninput="calculateTotalFuelCost()" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Total Cost ($)</label>
+            <input type="text" id="fuel-total-cost" class="form-control" readonly style="background:var(--bg-subtle);" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9rem;font-weight:600;">
+            <input type="checkbox" id="fuel-full-tank" checked />
+            Filled to full tank (Required for automatic KM/L calculation)
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes (optional)</label>
+          <input type="text" id="fuel-notes" class="form-control" placeholder="Trip notes or receipts reference" />
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeAddFuelModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Fuel Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/api.js?v=2.0"></script>
+  <script src="js/auth.js?v=2.0"></script>
+  <script src="js/app.js?v=2.0"></script>
+  <script src="js/fuel.js?v=2.0"></script>
+</body>
+</html>

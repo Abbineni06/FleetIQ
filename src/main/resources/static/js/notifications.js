@@ -63,7 +63,7 @@ function renderNotifications() {
 
         <div style="display:flex;gap:8px;align-items:center;">
           ${n.vehicleId ? `
-            <a href="/vehicle-details.html?id=${n.vehicleId}" class="btn btn-sm btn-secondary">
+            <a href="vehicle-details.html?id=${n.vehicleId}" class="btn btn-sm btn-secondary">
               View Vehicle
             </a>
           ` : ''}

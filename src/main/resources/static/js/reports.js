@@ -97,7 +97,7 @@ function renderReportTable(rows) {
   tbody.innerHTML = rows.map(r => `
     <tr>
       <td style="font-weight:700;">
-        <a href="/vehicle-details.html?id=${r.vehicleId}" style="color:var(--primary-orange);">
+        <a href="vehicle-details.html?id=${r.vehicleId}" style="color:var(--primary-orange);">
           ${escapeHtml(r.registrationNumber)}
         </a>
       </td>
