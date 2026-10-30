@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - Repair & Breakdown Tracker</title>
+  <link rel="stylesheet" href="css/theme.css?v=2.0">
+  <link rel="stylesheet" href="css/layout.css?v=2.0">
+  <link rel="stylesheet" href="css/components.css?v=2.0">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-container"></div>
+
+    <div class="main-container">
+      <div id="header-container" data-title="Repair Tracker" data-breadcrumb="FleetIQ / Maintenance / Repairs"></div>
+
+      <main class="page-content">
+        <!-- Top Toolbar -->
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:24px;gap:16px;">
+          <div>
+            <h2 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">Unscheduled Repairs & Downtime Tracker</h2>
+            <p style="color:var(--text-secondary);font-size:0.88rem;margin-top:2px;">
+              Track mechanical failures, workshop work orders, and parts replacements.
+            </p>
+          </div>
+
+          <button class="btn btn-primary" onclick="openLogRepairModal()">
+            <i data-lucide="plus-circle" style="width:16px;height:16px;"></i> Log New Repair Work Order
+          </button>
+        </div>
+
+        <!-- Filter & Table Card -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i data-lucide="wrench" style="color:var(--primary-orange);"></i> Active & Historical Repairs</div>
+              <div class="card-subtitle" id="repairs-count-label">Loading repairs...</div>
+            </div>
+
+            <div style="display:flex;gap:12px;">
+              <select id="repair-status-filter" class="form-select" style="width:170px;" onchange="applyRepairFilters()">
+                <option value="">All Statuses</option>
+                <option value="PENDING">Pending</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="COMPLETED">Completed</option>
+              </select>
+
+              <select id="repair-cat-filter" class="form-select" style="width:170px;" onchange="applyRepairFilters()">
+                <option value="">All Categories</option>
+                <option value="Brakes">Brakes</option>
+                <option value="Engine">Engine</option>
+                <option value="Transmission">Transmission</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Steering">Steering</option>
+                <option value="Cooling">Cooling</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Vehicle</th>
+                  <th>Date Logged</th>
+                  <th>Category</th>
+                  <th>Problem Description</th>
+                  <th>Parts Replaced</th>
+                  <th>Repair Cost</th>
+                  <th>Mechanic</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="repairs-tbody">
+                <tr><td colspan="9" style="text-align:center;padding:28px;">Loading repair history...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Log Repair Modal -->
+  <div class="modal-overlay" id="repair-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="wrench" style="color:var(--primary-orange);"></i> Log Unscheduled Repair</h3>
+        <button class="modal-close" onclick="closeLogRepairModal()"><i data-lucide="x"></i></button>
+      </div>
+
+      <form id="repair-form" onsubmit="handleRepairSubmit(event)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Vehicle *</label>
+            <select id="repair-vehicle-id" class="form-select" required>
+              <option value="">Select vehicle...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Repair Date *</label>
+            <input type="date" id="repair-date" class="form-control" required />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Repair Category *</label>
+            <select id="repair-category" class="form-select" required>
+              <option value="Brakes">Brakes</option>
+              <option value="Engine">Engine</option>
+              <option value="Transmission">Transmission</option>
+              <option value="Electrical">Electrical</option>
+              <option value="Steering">Steering</option>
+              <option value="Suspension">Suspension</option>
+              <option value="Cooling">Cooling</option>
+              <option value="Tires">Tires</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Initial Status *</label>
+            <select id="repair-status" class="form-select" required>
+              <option value="IN_PROGRESS">In Progress (Vehicle In Shop)</option>
+              <option value="PENDING">Pending Diagnosis</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Problem Description *</label>
+          <textarea id="repair-problem" class="form-control" rows="2" placeholder="Describe symptoms or breakdown cause..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Parts Replaced</label>
+          <input type="text" id="repair-parts" class="form-control" placeholder="e.g. Brake calipers, rotors, alternator" />
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Cost ($) *</label>
+            <input type="number" step="0.01" id="repair-cost" class="form-control" placeholder="e.g. 520.00" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Mechanic / Workshop</label>
+            <input type="text" id="repair-mechanic" class="form-control" placeholder="e.g. Metro Truck Care" />
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeLogRepairModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Log Repair Order</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Update Status Modal -->
+  <div class="modal-overlay" id="status-modal">
+    <div class="modal-card" style="max-width:440px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="check-circle" style="color:var(--primary-orange);"></i> Update Repair Status</h3>
+        <button class="modal-close" onclick="closeStatusModal()"><i data-lucide="x"></i></button>
+      </div>
+
+      <form id="status-form" onsubmit="handleStatusSubmit(event)">
+        <input type="hidden" id="status-repair-id" />
+
+        <div class="form-group">
+          <label class="form-label">New Status *</label>
+          <select id="update-new-status" class="form-select" required>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="COMPLETED">Completed (Restore Vehicle to Active)</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Final Cost ($)</label>
+          <input type="number" step="0.01" id="update-final-cost" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Closing Notes</label>
+          <textarea id="update-notes" class="form-control" rows="2" placeholder="Testing passed, released to driver..."></textarea>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeStatusModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Status</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/api.js?v=2.0"></script>
+  <script src="js/auth.js?v=2.0"></script>
+  <script src="js/app.js?v=2.0"></script>
+  <script src="js/repairs.js?v=2.0"></script>
+</body>
+</html>

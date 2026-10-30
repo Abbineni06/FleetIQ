@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - Vehicle Profile & History</title>
+  <link rel="stylesheet" href="css/theme.css?v=2.0">
+  <link rel="stylesheet" href="css/layout.css?v=2.0">
+  <link rel="stylesheet" href="css/components.css?v=2.0">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      padding: 12px 18px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: all var(--transition-fast);
+    }
+
+    .tab-btn:hover {
+      color: var(--primary-orange);
+    }
+
+    .tab-btn.active {
+      color: var(--primary-orange);
+      border-bottom-color: var(--primary-orange);
+    }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.2s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .spec-box {
+      background: var(--bg-subtle);
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+    }
+
+    .spec-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .spec-val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-container"></div>
+
+    <div class="main-container">
+      <div id="header-container" data-title="Vehicle Profile" data-breadcrumb="FleetIQ / Vehicles / Details"></div>
+
+      <main class="page-content">
+        <!-- Vehicle Hero Header Card -->
+        <div class="card" style="margin-bottom:24px;">
+          <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:20px;">
+            <div style="display:flex;align-items:center;gap:20px;">
+              <img id="v-hero-img" src="" alt="Vehicle" style="width:110px;height:80px;object-fit:cover;border-radius:var(--radius-md);border:1px solid var(--border-color);" />
+              <div>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+                  <h2 id="v-hero-reg" style="font-size:1.6rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.5px;">...</h2>
+                  <span id="v-hero-status" class="badge">...</span>
+                </div>
+                <div id="v-hero-model" style="font-size:0.95rem;color:var(--text-secondary);margin-bottom:6px;">...</div>
+                <div style="display:flex;align-items:center;gap:16px;font-size:0.8rem;color:var(--text-muted);">
+                  <span>VIN: <strong id="v-hero-vin" style="color:var(--text-primary);">-</strong></span>
+                  <span>Driver: <strong id="v-hero-driver" style="color:var(--text-primary);">-</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Health Score Mini Widget -->
+            <div style="display:flex;align-items:center;gap:24px;">
+              <div style="text-align:right;">
+                <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:var(--text-muted);">Vehicle Health</div>
+                <div id="v-hero-health-cat" style="font-size:0.9rem;font-weight:700;color:var(--primary-orange);">Excellent</div>
+              </div>
+              <div style="width:64px;height:64px;border-radius:50%;border:4px solid var(--primary-orange);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:var(--primary-orange);" id="v-hero-health-val">
+                --
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tab-nav">
+          <button class="tab-btn active" onclick="switchTab('overview')"><i data-lucide="info"></i> Overview</button>
+          <button class="tab-btn" onclick="switchTab('maintenance')"><i data-lucide="sparkles"></i> Maintenance History</button>
+          <button class="tab-btn" onclick="switchTab('repairs')"><i data-lucide="wrench"></i> Repair History</button>
+          <button class="tab-btn" onclick="switchTab('fuel')"><i data-lucide="fuel"></i> Fuel History</button>
+          <button class="tab-btn" onclick="switchTab('inspections')"><i data-lucide="clipboard-check"></i> Inspection History</button>
+          <button class="tab-btn" onclick="switchTab('health')"><i data-lucide="activity"></i> Health Score Audit</button>
+          <button class="tab-btn" onclick="switchTab('qr')"><i data-lucide="qr-code"></i> QR Code & Token</button>
+        </div>
+
+        <!-- TAB 1: Overview -->
+        <div id="tab-overview" class="tab-pane active">
+          <div class="card" style="margin-bottom:24px;">
+            <div class="card-header">
+              <div class="card-title"><i data-lucide="sliders" style="color:var(--primary-orange);"></i> Specifications & Service Thresholds</div>
+            </div>
+
+            <div class="spec-grid" id="v-spec-grid">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Maintenance History -->
+        <div id="tab-maintenance" class="tab-pane">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i data-lucide="sparkles" style="color:var(--primary-orange);"></i> Scheduled Maintenance Records</div>
+              <a id="btn-schedule-maint-link" href="#" class="btn btn-primary btn-sm">+ Log Service</a>
+            </div>
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Odometer</th>
+                    <th>Work Done</th>
+                    <th>Parts</th>
+                    <th>Cost</th>
+                    <th>Workshop / Mechanic</th>
+                    <th>Next Svc KM</th>
+                  </tr>
+                </thead>
+                <tbody id="v-maint-tbody">
+                  <tr><td colspan="8" style="text-align:center;padding:24px;">Loading service records...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: Repair History -->
+        <div id="tab-repairs" class="tab-pane">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i data-lucide="wrench" style="color:var(--primary-orange);"></i> Unscheduled Repairs & Breakdown Logs</div>
+              <a id="btn-log-repair-link" href="#" class="btn btn-primary btn-sm">+ Log Repair</a>
+            </div>
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Problem Description</th>
+                    <th>Parts Replaced</th>
+                    <th>Cost</th>
+                    <th>Status</th>
+                    <th>Mechanic</th>
+                  </tr>
+                </thead>
+                <tbody id="v-repair-tbody">
+                  <tr><td colspan="7" style="text-align:center;padding:24px;">Loading repair history...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: Fuel History -->
+        <div id="tab-fuel" class="tab-pane">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i data-lucide="fuel" style="color:var(--primary-orange);"></i> Fuel Logs & Mileage</div>
+              <a id="btn-add-fuel-link" href="#" class="btn btn-primary btn-sm">+ Log Refill</a>
+            </div>
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Odometer</th>
+                    <th>Litres</th>
+                    <th>Price/L</th>
+                    <th>Total Cost</th>
+                    <th>Station</th>
+                    <th>Full Tank?</th>
+                    <th>Mileage (KM/L)</th>
+                  </tr>
+                </thead>
+                <tbody id="v-fuel-tbody">
+                  <tr><td colspan="8" style="text-align:center;padding:24px;">Loading fuel records...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: Inspection History -->
+        <div id="tab-inspections" class="tab-pane">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i data-lucide="clipboard-check" style="color:var(--primary-orange);"></i> Driver Health Inspections</div>
+              <a id="btn-new-insp-link" href="#" class="btn btn-primary btn-sm">+ Start Inspection</a>
+            </div>
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Inspection Date</th>
+                    <th>Inspector</th>
+                    <th>Overall Status</th>
+                    <th>Critical Defect?</th>
+                    <th>Notes</th>
+                    <th>Checklist Breakdown</th>
+                  </tr>
+                </thead>
+                <tbody id="v-inspection-tbody">
+                  <tr><td colspan="6" style="text-align:center;padding:24px;">Loading inspections...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 6: Health Score Audit -->
+        <div id="tab-health" class="tab-pane">
+          <div class="health-split-grid">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><i data-lucide="activity" style="color:var(--primary-orange);"></i> Health Score</div>
+              </div>
+              <div class="health-gauge-container">
+                <div class="score-circle">
+                  <svg width="140" height="140" viewBox="0 0 140 140">
+                    <circle class="bg-circle" cx="70" cy="70" r="54"></circle>
+                    <circle class="val-circle" id="health-circle-bar" cx="70" cy="70" r="54" stroke-dasharray="339.29" stroke-dashoffset="33.9"></circle>
+                  </svg>
+                  <div class="score-text">
+                    <span class="score-number" id="health-score-big">--</span>
+                    <span class="score-unit">Out of 100</span>
+                  </div>
+                </div>
+                <div id="health-cat-badge" class="badge badge-success" style="margin-top:14px;font-size:0.85rem;">Excellent</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><i data-lucide="shield" style="color:var(--primary-orange);"></i> Scoring Formula Breakdown</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:14px;" id="health-breakdown-box">
+                <!-- Populated via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 7: QR Code & Token -->
+        <div id="tab-qr" class="tab-pane">
+          <div class="card" style="max-width:640px;margin:0 auto;text-align:center;">
+            <div class="card-header" style="justify-content:center;">
+              <div class="card-title"><i data-lucide="qr-code" style="color:var(--primary-orange);"></i> Vehicle QR Code Profile</div>
+            </div>
+            <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:20px;">
+              Scan with any mobile device to open this vehicle's authorized real-time service passport.
+            </p>
+
+            <div style="margin:20px 0;display:flex;justify-content:center;">
+              <img id="qr-image-display" src="" alt="Vehicle QR Code" style="width:240px;height:240px;border:12px solid #FFFFFF;box-shadow:var(--shadow-md);border-radius:var(--radius-md);" />
+            </div>
+
+            <div style="margin-bottom:20px;">
+              <span style="font-size:0.8rem;color:var(--text-muted);">Secure Public Token:</span>
+              <div style="font-family:monospace;font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-top:4px;" id="qr-token-text">...</div>
+            </div>
+
+            <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
+              <a id="btn-download-qr" download="vehicle-qr.png" class="btn btn-primary btn-sm">
+                <i data-lucide="download"></i> Download PNG
+              </a>
+              <button class="btn btn-secondary btn-sm" onclick="printQrSheet()">
+                <i data-lucide="printer"></i> Print QR Card
+              </button>
+              <a id="btn-open-public-profile" target="_blank" class="btn btn-outline btn-sm">
+                <i data-lucide="external-link"></i> Open Public View
+              </a>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/api.js?v=2.0"></script>
+  <script src="js/auth.js?v=2.0"></script>
+  <script src="js/app.js?v=2.0"></script>
+  <script src="js/vehicle-details.js"></script>
+</body>
+</html>

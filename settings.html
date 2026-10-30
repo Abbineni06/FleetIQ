@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - Settings & User Management</title>
+  <link rel="stylesheet" href="css/theme.css?v=2.0">
+  <link rel="stylesheet" href="css/layout.css?v=2.0">
+  <link rel="stylesheet" href="css/components.css?v=2.0">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-container"></div>
+
+    <div class="main-container">
+      <div id="header-container" data-title="System Settings" data-breadcrumb="FleetIQ / System / Settings"></div>
+
+      <main class="page-content">
+        <!-- User Profile Card -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header">
+            <div class="card-title"><i data-lucide="user" style="color:var(--primary-orange);"></i> My Profile</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+            <div class="user-avatar" style="width:60px;height:60px;font-size:1.4rem;" id="my-avatar">--</div>
+            <div>
+              <h3 id="my-fullname" style="font-size:1.2rem;font-weight:700;">Loading...</h3>
+              <div id="my-username-email" style="font-size:0.85rem;color:var(--text-secondary);margin-top:2px;">...</div>
+              <div style="margin-top:6px;"><span id="my-role-badge" class="badge badge-orange">...</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Predictive & Health Scoring Thresholds -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i data-lucide="sliders" style="color:var(--primary-orange);"></i> Fleet Thresholds & Health Weights</div>
+              <div class="card-subtitle">Adjust predictive distance countdown rules and mechanical health scoring ratios</div>
+            </div>
+          </div>
+
+          <form id="settings-form" onsubmit="handleSettingsSave(event)">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+              <div class="form-group">
+                <label class="form-label">Upcoming Service Warning Threshold (KM)</label>
+                <input type="number" id="set-upcoming-km" class="form-control" value="1000" min="100" required />
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Triggers upcoming service status and alert</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Due Soon High-Priority Threshold (KM)</label>
+                <input type="number" id="set-due-soon-km" class="form-control" value="500" min="50" required />
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Triggers due soon warning</div>
+              </div>
+            </div>
+
+            <div style="font-size:0.85rem;font-weight:700;color:var(--text-primary);margin-bottom:12px;">Health Score Component Weights (Must total 100%)</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:14px;margin-bottom:20px;">
+              <div class="form-group">
+                <label class="form-label">Maintenance Compliance (%)</label>
+                <input type="number" id="set-weight-maint" class="form-control" value="30" min="0" max="100" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Inspection Results (%)</label>
+                <input type="number" id="set-weight-insp" class="form-control" value="30" min="0" max="100" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Repair Frequency (%)</label>
+                <input type="number" id="set-weight-repair" class="form-control" value="20" min="0" max="100" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Overdue Penalty (%)</label>
+                <input type="number" id="set-weight-overdue" class="form-control" value="20" min="0" max="100" required />
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-sm">
+              <i data-lucide="save" style="width:14px;height:14px;"></i> Save Threshold Settings
+            </button>
+          </form>
+        </div>
+
+        <!-- User Management (Admin Only Section) -->
+        <div class="card" id="user-mgmt-card" style="display:none;">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i data-lucide="users" style="color:var(--primary-orange);"></i> Enterprise User Management</div>
+              <div class="card-subtitle">Manage Admins, Fleet Managers, and Drivers</div>
+            </div>
+
+            <button class="btn btn-primary btn-sm" onclick="openCreateUserModal()">
+              <i data-lucide="user-plus" style="width:14px;height:14px;"></i> Create User
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Full Name</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody">
+                <tr><td colspan="7" style="text-align:center;padding:24px;">Loading users...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Create User Modal -->
+  <div class="modal-overlay" id="create-user-modal">
+    <div class="modal-card" style="max-width:480px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="user-plus" style="color:var(--primary-orange);"></i> Create New User</h3>
+        <button class="modal-close" onclick="closeCreateUserModal()"><i data-lucide="x"></i></button>
+      </div>
+
+      <form id="create-user-form" onsubmit="handleCreateUserSubmit(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input type="text" id="new-user-fullname" class="form-control" required />
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label class="form-label">Username *</label>
+            <input type="text" id="new-user-username" class="form-control" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password *</label>
+            <input type="password" id="new-user-password" class="form-control" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address *</label>
+          <input type="email" id="new-user-email" class="form-control" required />
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="text" id="new-user-phone" class="form-control" placeholder="+1..." />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">System Role *</label>
+            <select id="new-user-role" class="form-select" required>
+              <option value="ROLE_DRIVER">Driver</option>
+              <option value="ROLE_MANAGER">Fleet Manager</option>
+              <option value="ROLE_ADMIN">Administrator</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeCreateUserModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/api.js?v=2.0"></script>
+  <script src="js/auth.js?v=2.0"></script>
+  <script src="js/app.js?v=2.0"></script>
+  <script src="js/settings.js?v=2.0"></script>
+</body>
+</html>

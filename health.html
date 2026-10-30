@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - Vehicle Health Scoring System</title>
+  <link rel="stylesheet" href="css/theme.css?v=2.0">
+  <link rel="stylesheet" href="css/layout.css?v=2.0">
+  <link rel="stylesheet" href="css/components.css?v=2.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-container"></div>
+
+    <div class="main-container">
+      <div id="header-container" data-title="Vehicle Health Scores" data-breadcrumb="FleetIQ / Monitoring / Health"></div>
+
+      <main class="page-content">
+        <!-- Title & Subtitle -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px;">
+          <div>
+            <h2 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">Fleet Mechanical Health Scoring Engine</h2>
+            <p style="color:var(--text-secondary);font-size:0.88rem;margin-top:2px;">
+              Documented weighted scoring algorithm (0–100) evaluating maintenance, inspections, repairs, and service compliance.
+            </p>
+          </div>
+        </div>
+
+        <!-- KPI Breakdown -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Average Fleet Health</span>
+              <div class="kpi-icon orange"><i data-lucide="activity"></i></div>
+            </div>
+            <div class="kpi-value" id="health-avg-score">-</div>
+            <div class="kpi-meta">Across entire registered fleet</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Excellent (85-100)</span>
+              <div class="kpi-icon green"><i data-lucide="check-circle-2"></i></div>
+            </div>
+            <div class="kpi-value" id="count-excellent" style="color:var(--status-success);">-</div>
+            <div class="kpi-meta">Optimal mechanical health</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Good (70-84)</span>
+              <div class="kpi-icon blue"><i data-lucide="shield-check"></i></div>
+            </div>
+            <div class="kpi-value" id="count-good" style="color:var(--status-info);">-</div>
+            <div class="kpi-meta">Standard operational health</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Needs Attention (50-69)</span>
+              <div class="kpi-icon yellow"><i data-lucide="alert-triangle"></i></div>
+            </div>
+            <div class="kpi-value" id="count-attention" style="color:var(--status-warning);">-</div>
+            <div class="kpi-meta">Service or inspection warning</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Poor (<50) or Unsafe</span>
+              <div class="kpi-icon red"><i data-lucide="alert-octagon"></i></div>
+            </div>
+            <div class="kpi-value" id="count-poor" style="color:var(--status-danger);">-</div>
+            <div class="kpi-meta">Grounded / urgent repairs</div>
+          </div>
+        </div>
+
+        <!-- Health Table -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i data-lucide="activity" style="color:var(--primary-orange);"></i> Fleet Vehicles Health Audit</div>
+              <div class="card-subtitle">Detailed breakdown of maintenance compliance, inspections, breakdown history, and penalties</div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Vehicle</th>
+                  <th>Overall Score</th>
+                  <th>Category</th>
+                  <th>Maint Compliance (30%)</th>
+                  <th>Inspection Score (30%)</th>
+                  <th>Repair Stability (20%)</th>
+                  <th>Overdue Penalty (20%)</th>
+                  <th>Deduction Factors & Actions</th>
+                </tr>
+              </thead>
+              <tbody id="health-tbody">
+                <tr><td colspan="8" style="text-align:center;padding:28px;">Auditing vehicle health scores...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/api.js?v=2.0"></script>
+  <script src="js/auth.js?v=2.0"></script>
+  <script src="js/app.js?v=2.0"></script>
+  <script src="js/health.js?v=2.0"></script>
+</body>
+</html>

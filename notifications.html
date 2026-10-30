@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - Notification Center</title>
+  <link rel="stylesheet" href="css/theme.css?v=2.0">
+  <link rel="stylesheet" href="css/layout.css?v=2.0">
+  <link rel="stylesheet" href="css/components.css?v=2.0">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-container"></div>
+
+    <div class="main-container">
+      <div id="header-container" data-title="Notification Center" data-breadcrumb="FleetIQ / System / Notifications"></div>
+
+      <main class="page-content">
+        <!-- Top Toolbar -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px;">
+          <div>
+            <h2 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">Fleet Incident & Alert Center</h2>
+            <p style="color:var(--text-secondary);font-size:0.88rem;margin-top:2px;">
+              Real-time alerts for overdue services, critical inspection failures, and fuel anomalies.
+            </p>
+          </div>
+
+          <button class="btn btn-secondary" onclick="markAllAsRead()">
+            <i data-lucide="check-check" style="width:16px;height:16px;"></i> Mark All as Read
+          </button>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="card" style="margin-bottom:20px;padding:14px 20px;">
+          <div style="display:flex;gap:12px;align-items:center;">
+            <span style="font-size:0.82rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Priority:</span>
+            <button class="btn btn-sm btn-outline active-filter" onclick="filterPriority('')">All</button>
+            <button class="btn btn-sm btn-secondary" onclick="filterPriority('CRITICAL')">Critical</button>
+            <button class="btn btn-sm btn-secondary" onclick="filterPriority('HIGH')">High</button>
+            <button class="btn btn-sm btn-secondary" onclick="filterPriority('MEDIUM')">Medium</button>
+            <button class="btn btn-sm btn-secondary" onclick="filterPriority('LOW')">Low</button>
+          </div>
+        </div>
+
+        <!-- Notifications List -->
+        <div class="card">
+          <div id="notifications-full-list" style="display:flex;flex-direction:column;gap:12px;">
+            <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading alert feeds...</div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/api.js?v=2.0"></script>
+  <script src="js/auth.js?v=2.0"></script>
+  <script src="js/app.js?v=2.0"></script>
+  <script src="js/notifications.js?v=2.0"></script>
+</body>
+</html>

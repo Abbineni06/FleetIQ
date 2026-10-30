@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetIQ - Reports & Analytics</title>
+  <link rel="stylesheet" href="css/theme.css?v=2.0">
+  <link rel="stylesheet" href="css/layout.css?v=2.0">
+  <link rel="stylesheet" href="css/components.css?v=2.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-container"></div>
+
+    <div class="main-container">
+      <div id="header-container" data-title="Reports & Analytics" data-breadcrumb="FleetIQ / Intelligence / Reports"></div>
+
+      <main class="page-content">
+        <!-- Toolbar & Export Actions -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px;">
+          <div>
+            <h2 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">Fleet Financial & Mechanical Reports</h2>
+            <p style="color:var(--text-secondary);font-size:0.88rem;margin-top:2px;">
+              Comprehensive expenditure audits, downtime statistics, and exportable CSV ledgers.
+            </p>
+          </div>
+
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-primary" onclick="exportCsvReport()">
+              <i data-lucide="download" style="width:16px;height:16px;"></i> Export CSV
+            </button>
+            <button class="btn btn-secondary" onclick="window.print()">
+              <i data-lucide="printer" style="width:16px;height:16px;"></i> Print Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="card" style="margin-bottom:24px;padding:18px 24px;">
+          <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;">
+            <div style="flex:1;min-width:200px;">
+              <label class="form-label">Report Category</label>
+              <select id="report-type" class="form-select" onchange="generateReportData()">
+                <option value="TOTAL_EXPENDITURE">Total Fleet Expenditure</option>
+                <option value="ANNUAL_MAINTENANCE">Annual Scheduled Maintenance</option>
+                <option value="ANNUAL_REPAIRS">Annual Unscheduled Repairs</option>
+                <option value="FUEL_EXPENSE">Fuel Consumption & Expense</option>
+                <option value="VEHICLE_HEALTH">Vehicle Health Audit</option>
+              </select>
+            </div>
+
+            <div style="flex:1;min-width:180px;">
+              <label class="form-label">Date Range</label>
+              <select id="report-date-range" class="form-select" onchange="generateReportData()">
+                <option value="PAST_12_MONTHS">Past 12 Months</option>
+                <option value="THIS_YEAR">This Year (YTD)</option>
+                <option value="THIS_MONTH">This Month</option>
+                <option value="ALL_TIME">All Time History</option>
+              </select>
+            </div>
+
+            <div style="flex:1;min-width:200px;">
+              <label class="form-label">Filter Vehicle</label>
+              <select id="report-vehicle-id" class="form-select" onchange="generateReportData()">
+                <option value="">All Fleet Vehicles</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Total Fleet Cost</span>
+              <div class="kpi-icon orange"><i data-lucide="dollar-sign"></i></div>
+            </div>
+            <div class="kpi-value" id="rep-total-cost">-</div>
+            <div class="kpi-meta">All expenses combined</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Maintenance Cost</span>
+              <div class="kpi-icon green"><i data-lucide="sparkles"></i></div>
+            </div>
+            <div class="kpi-value" id="rep-maint-cost">-</div>
+            <div class="kpi-meta">Preventative service</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Repair Cost</span>
+              <div class="kpi-icon red"><i data-lucide="wrench"></i></div>
+            </div>
+            <div class="kpi-value" id="rep-repair-cost">-</div>
+            <div class="kpi-meta">Unscheduled breakdowns</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Fuel Cost</span>
+              <div class="kpi-icon blue"><i data-lucide="fuel"></i></div>
+            </div>
+            <div class="kpi-value" id="rep-fuel-cost">-</div>
+            <div class="kpi-meta">Refill expenses</div>
+          </div>
+        </div>
+
+        <!-- Report Chart -->
+        <div class="card" style="margin-bottom:28px;">
+          <div class="card-header">
+            <div class="card-title"><i data-lucide="bar-chart" style="color:var(--primary-orange);"></i> Vehicle Expenditure Distribution</div>
+          </div>
+          <div style="height:280px;position:relative;">
+            <canvas id="reportChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Detailed Table -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i data-lucide="table" style="color:var(--primary-orange);"></i> Detailed Expenditure Ledger</div>
+          </div>
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Registration</th>
+                  <th>Vehicle Model</th>
+                  <th>Vehicle Type</th>
+                  <th>Status</th>
+                  <th>Current Odometer</th>
+                  <th>Maintenance Cost</th>
+                  <th>Repair Cost</th>
+                  <th>Fuel Cost</th>
+                  <th>Total Cost</th>
+                </tr>
+              </thead>
+              <tbody id="report-tbody">
+                <tr><td colspan="9" style="text-align:center;padding:28px;">Compiling report records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/api.js?v=2.0"></script>
+  <script src="js/auth.js?v=2.0"></script>
+  <script src="js/app.js?v=2.0"></script>
+  <script src="js/reports.js?v=2.0"></script>
+</body>
+</html>
