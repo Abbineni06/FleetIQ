@@ -60,6 +60,11 @@ function renderSidebar(container) {
   const roleDisplay = user.role ? user.role.replace('ROLE_', '').toLowerCase() : 'user';
 
   const isCollapsed = localStorage.getItem('fleetiq_sidebar_collapsed') === 'true';
+  if (isCollapsed) {
+    document.body.classList.add('sidebar-collapsed');
+  } else {
+    document.body.classList.remove('sidebar-collapsed');
+  }
 
   container.innerHTML = `
     <aside class="sidebar ${isCollapsed ? 'collapsed' : ''}" id="app-sidebar">
@@ -161,6 +166,7 @@ function renderSidebar(container) {
   if (toggleBtn && sidebar) {
     toggleBtn.addEventListener('click', () => {
       sidebar.classList.toggle('collapsed');
+      document.body.classList.toggle('sidebar-collapsed');
       localStorage.setItem('fleetiq_sidebar_collapsed', sidebar.classList.contains('collapsed'));
     });
   }
