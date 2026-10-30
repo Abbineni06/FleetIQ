@@ -102,6 +102,16 @@ function renderVehiclesTable(vehicles) {
     const defaultImg = 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=120&q=80';
     const thumb = v.imageUrl || defaultImg;
 
+    const remKm = (v.remainingKm !== undefined && v.remainingKm !== null)
+      ? v.remainingKm
+      : ((v.nextServiceKm != null && v.currentOdometer != null) ? (v.nextServiceKm - v.currentOdometer) : 0);
+    const isOverdue = remKm <= 0 || v.status === 'MAINTENANCE_DUE';
+    const remColor = (remKm <= 500 || isOverdue) ? 'var(--status-danger)' : 'var(--text-muted)';
+    const remWeight = (remKm <= 500 || isOverdue) ? '700' : '400';
+    const remText = isOverdue
+      ? (remKm < 0 ? `${Math.abs(remKm).toLocaleString()} KM OVERDUE` : 'MAINTENANCE DUE')
+      : `${(remKm || 0).toLocaleString()} KM left`;
+
     return `
       <tr>
         <td>
@@ -125,15 +135,15 @@ function renderVehiclesTable(vehicles) {
         <td>
           <div style="display:flex;align-items:center;gap:6px;">
             <span style="font-weight:600;">${(v.currentOdometer || 0).toLocaleString()} KM</span>
-            <button class="btn btn-sm btn-secondary" style="padding:2px 6px;" title="Update Odometer" onclick="openOdometerModal(${v.id}, '${escapeHtml(v.registrationNumber)}', ${v.currentOdometer})">
+            <button class="btn btn-sm btn-secondary" style="padding:2px 6px;" title="Update Odometer" onclick="openOdometerModal(${v.id}, '${escapeHtml(v.registrationNumber)}', ${v.currentOdometer || 0})">
               <i data-lucide="gauge" style="width:12px;height:12px;"></i>
             </button>
           </div>
         </td>
         <td>
           <div>${(v.nextServiceKm || 0).toLocaleString()} KM</div>
-          <div style="font-size:0.72rem;color:${v.remainingKm <= 500 ? 'var(--status-danger)' : 'var(--text-muted)'};font-weight:${v.remainingKm <= 500 ? '700' : '400'};">
-            ${v.remainingKm <= 0 ? 'OVERDUE' : (v.remainingKm).toLocaleString() + ' KM left'}
+          <div style="font-size:0.72rem;color:${remColor};font-weight:${remWeight};">
+            ${remText}
           </div>
         </td>
         <td>
