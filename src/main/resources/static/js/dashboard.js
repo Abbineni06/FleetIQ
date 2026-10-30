@@ -265,24 +265,30 @@ function renderUpcomingMaintenance(items) {
     else if (m.urgency === 'DUE_SOON') urgencyBadge = '<span class="badge badge-warning">Due Soon</span>';
     else if (m.urgency === 'UPCOMING') urgencyBadge = '<span class="badge badge-orange">Upcoming</span>';
 
-    const predictedDateStr = m.hasSufficientData && m.predictedServiceDate ? m.predictedServiceDate : 'Insufficient data';
-    const remainingClass = m.remainingKm <= 0 ? 'style="color:var(--status-danger);font-weight:700;"' : '';
+    const isOverdue = m.remainingKm <= 0 || m.urgency === 'OVERDUE';
+    const remainingText = isOverdue
+      ? `<span style="color:var(--status-danger);font-weight:700;">${Math.abs(m.remainingKm || 0).toLocaleString()} KM Overdue</span>`
+      : `<span style="font-weight:600;">${(m.remainingKm || 0).toLocaleString()} KM</span>`;
+
+    const predictedDateStr = isOverdue
+      ? `<span style="color:var(--status-danger);font-weight:700;">Immediate</span>`
+      : (m.hasSufficientData && m.predictedServiceDate ? m.predictedServiceDate : '<span style="color:var(--text-muted);">Upcoming</span>');
 
     return `
       <tr>
         <td>
-          <a href="/vehicle-details.html?id=${m.vehicleId}" style="font-weight:700;color:var(--text-primary);">
+          <a href="/vehicle-details.html?id=${m.vehicleId}" style="font-weight:700;color:var(--text-primary);display:block;">
             ${escapeHtml(m.registrationNumber)}
           </a>
-          <div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(m.vehicleModel)}</div>
+          <span style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(m.vehicleModel)}</span>
         </td>
-        <td>${(m.currentOdometer || 0).toLocaleString()} KM</td>
-        <td>${(m.nextServiceKm || 0).toLocaleString()} KM</td>
-        <td ${remainingClass}>${(m.remainingKm || 0).toLocaleString()} KM</td>
+        <td style="font-weight:600;">${(m.currentOdometer || 0).toLocaleString()} KM</td>
+        <td style="color:var(--text-secondary);">${(m.nextServiceKm || 0).toLocaleString()} KM</td>
+        <td>${remainingText}</td>
         <td>${predictedDateStr}</td>
         <td>${urgencyBadge}</td>
-        <td>
-          <a href="/maintenance.html?vehicleId=${m.vehicleId}&action=schedule" class="btn btn-sm btn-outline">
+        <td style="text-align:right;">
+          <a href="/maintenance.html?vehicleId=${m.vehicleId}&action=schedule" class="btn btn-sm btn-primary" style="white-space:nowrap;padding:5px 12px;font-size:0.8rem;font-weight:600;">
             Schedule
           </a>
         </td>

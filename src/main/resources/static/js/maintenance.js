@@ -85,7 +85,10 @@ function renderPredictions() {
       forecast = `<strong style="color:var(--status-danger);">Immediate Action</strong>`;
     }
 
-    const remainingStyle = p.remainingKm <= 0 ? 'style="color:var(--status-danger);font-weight:700;"' : (p.remainingKm < 500 ? 'style="color:var(--status-warning);font-weight:700;"' : '');
+    const isOverdue = p.remainingKm <= 0 || p.urgency === 'OVERDUE';
+    const remainingText = isOverdue
+      ? `<span style="color:var(--status-danger);font-weight:700;">${Math.abs(p.remainingKm || 0).toLocaleString()} KM Overdue</span>`
+      : `<span style="font-weight:600;">${(p.remainingKm || 0).toLocaleString()} KM</span>`;
 
     return `
       <tr>
@@ -98,7 +101,7 @@ function renderPredictions() {
         <td style="font-weight:600;">${(p.currentOdometer || 0).toLocaleString()} KM</td>
         <td>${(p.lastServiceKm || 0).toLocaleString()} KM</td>
         <td>${(p.nextServiceKm || 0).toLocaleString()} KM</td>
-        <td ${remainingStyle}>${(p.remainingKm || 0).toLocaleString()} KM</td>
+        <td>${remainingText}</td>
         <td>${avgDaily}</td>
         <td>${forecast}</td>
         <td>${urgencyBadge}</td>

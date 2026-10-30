@@ -88,7 +88,7 @@ function renderVehiclesTable(vehicles) {
 
   tbody.innerHTML = vehicles.map(v => {
     let statusBadge = '<span class="badge badge-success">Active</span>';
-    if (v.status === 'MAINTENANCE_DUE') statusBadge = '<span class="badge badge-warning">Maint Due</span>';
+    if (v.status === 'MAINTENANCE_DUE') statusBadge = '<span class="badge badge-warning">Service Due</span>';
     if (v.status === 'IN_SHOP') statusBadge = '<span class="badge badge-info">In Shop</span>';
     if (v.status === 'UNSAFE') statusBadge = '<span class="badge badge-danger">UNSAFE</span>';
     if (v.status === 'RETIRED') statusBadge = '<span class="badge badge-secondary">Retired</span>';
