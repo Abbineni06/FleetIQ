@@ -64,16 +64,19 @@ function renderRepairsTable(repairs) {
   const countLabel = document.getElementById('repairs-count-label');
   if (!tbody) return;
 
+  const list = Array.isArray(repairs) ? repairs : [];
+
   if (countLabel) {
-    countLabel.textContent = `Showing ${repairs.length} of ${allRepairs.length} repairs`;
+    const totalCount = Array.isArray(allRepairs) ? allRepairs.length : list.length;
+    countLabel.textContent = `Showing ${list.length} of ${totalCount} repairs`;
   }
 
-  if (repairs.length === 0) {
+  if (list.length === 0) {
     tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text-muted);">No repair logs match the selected filters.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = repairs.map(r => {
+  tbody.innerHTML = list.map(r => {
     let stBadge = '<span class="badge badge-warning">Pending</span>';
     if (r.repairStatus === 'IN_PROGRESS') stBadge = '<span class="badge badge-info">In Shop (In Progress)</span>';
     if (r.repairStatus === 'COMPLETED') stBadge = '<span class="badge badge-success">Completed</span>';

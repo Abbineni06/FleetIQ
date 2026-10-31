@@ -103,6 +103,18 @@ async function loadVehicles() {
   }
 }
 
+function formatTimeAgoSafe(dateString) {
+  if (typeof formatTimeAgo === 'function') {
+    try { return formatTimeAgo(dateString); } catch (e) {}
+  }
+  if (!dateString) return 'Recent';
+  try {
+    const d = new Date(dateString);
+    if (!isNaN(d.getTime())) return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch (e) {}
+  return String(dateString);
+}
+
 async function loadRecentInspections() {
   const container = document.getElementById('recent-inspections-list');
   if (!container) return;
@@ -124,7 +136,7 @@ async function loadRecentInspections() {
       }
 
       const notes = i.generalNotes || i.comments || 'Pre-trip checklist completed';
-      const timeStr = typeof formatTimeAgo === 'function' ? formatTimeAgo(i.inspectionDate) : (i.inspectionDate || 'Today');
+      const timeStr = formatTimeAgoSafe(i.inspectionDate);
 
       return `
         <div style="background:var(--bg-subtle);border-radius:var(--radius-md);padding:14px;border:1px solid var(--border-light);">

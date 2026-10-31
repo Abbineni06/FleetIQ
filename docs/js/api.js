@@ -189,7 +189,11 @@ function generateSvgQrDataUri(token, regNumber) {
     <rect x="85" y="85" width="30" height="30" fill="#FFF7ED" rx="4" stroke="#F97316" stroke-width="2"/>
     <text x="100" y="104" font-family="Inter,sans-serif" font-size="10" font-weight="900" fill="#F97316" text-anchor="middle">FIQ</text>
   </svg>`;
-  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  try {
+    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+  } catch (e) {
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
 }
 
 // Persistent Mock In-Memory DB for Client Experience
@@ -332,7 +336,20 @@ function handleGitHubPagesMock(endpoint, options = {}) {
         excellentHealthCount: 5,
         goodHealthCount: 2,
         needsAttentionHealthCount: 1,
-        poorHealthCount: 1
+        poorHealthCount: 1,
+        healthDistribution: {
+          'Excellent': 5,
+          'Good': 2,
+          'Needs Attention': 1,
+          'Poor': 0,
+          'Unsafe': 1
+        },
+        statusDistribution: {
+          'Active': 4,
+          'Service Due': 2,
+          'In Workshop': 1,
+          'Unsafe': 1
+        }
       },
       upcomingMaintenance: [
         { vehicleId: 5, registrationNumber: 'FL-105', vehicleModel: 'Ram ProMaster 3500', currentOdometer: 41500, nextServiceKm: 40000, remainingKm: -1500, predictedServiceDate: '2026-10-30', urgency: 'OVERDUE', hasSufficientData: true },
@@ -385,11 +402,11 @@ function handleGitHubPagesMock(endpoint, options = {}) {
   // Fuel Comparison
   if (endpoint.includes('/api/fuel/comparison')) {
     return [
-      { registrationNumber: 'FL-101', vehicleModel: 'Freightliner Cascadia', averageKml: 4.2 },
-      { registrationNumber: 'FL-102', vehicleModel: 'Mercedes-Benz Sprinter', averageKml: 9.8 },
-      { registrationNumber: 'FL-103', vehicleModel: 'Ford Transit-250', averageKml: 8.4 },
-      { registrationNumber: 'FL-104', vehicleModel: 'Isuzu NPR-HD', averageKml: 6.5 },
-      { registrationNumber: 'FL-106', vehicleModel: 'Volvo VNL 860', averageKml: 3.9 }
+      { registrationNumber: 'FL-101', vehicleModel: 'Freightliner Cascadia', avgMileageKml: 4.1, averageKml: 4.1 },
+      { registrationNumber: 'FL-102', vehicleModel: 'Mercedes-Benz Sprinter', avgMileageKml: 9.8, averageKml: 9.8 },
+      { registrationNumber: 'FL-103', vehicleModel: 'Ford Transit-250', avgMileageKml: 8.5, averageKml: 8.5 },
+      { registrationNumber: 'FL-104', vehicleModel: 'Isuzu NPR-HD', avgMileageKml: 6.5, averageKml: 6.5 },
+      { registrationNumber: 'FL-106', vehicleModel: 'Volvo VNL 860', avgMileageKml: 3.9, averageKml: 3.9 }
     ];
   }
 
@@ -545,27 +562,57 @@ function handleGitHubPagesMock(endpoint, options = {}) {
 
   // Reports Financials
   if (endpoint.includes('/api/reports')) {
+    const urlParams = new URLSearchParams(endpoint.includes('?') ? endpoint.split('?')[1] : '');
+    const type = (urlParams.get('type') || 'TOTAL_EXPENDITURE').toUpperCase();
+    const vehicleId = urlParams.get('vehicleId');
+
+    let rawTable = [
+      { vehicleId: 1, registrationNumber: 'FL-101', model: 'Freightliner Cascadia 126', type: 'Heavy Truck', fuelType: 'Diesel', status: 'ACTIVE', odometer: '82,400 KM', maintenanceCost: '$780.00', repairCost: '$650.00', fuelCost: '$540.00', totalExpense: '$1,970.00', fuelQuantity: '180 L', avgMileageKml: '4.10 KM/L', rawFuelCost: 540, rawMaintCost: 780, rawRepairCost: 650, rawTotalCost: 1970 },
+      { vehicleId: 2, registrationNumber: 'FL-102', model: 'Mercedes-Benz Sprinter 3500', type: 'Cargo Van', fuelType: 'Diesel', status: 'MAINTENANCE_DUE', odometer: '39,580 KM', maintenanceCost: '$450.00', repairCost: '$0.00', fuelCost: '$140.00', totalExpense: '$590.00', fuelQuantity: '65 L', avgMileageKml: '9.80 KM/L', rawFuelCost: 140, rawMaintCost: 450, rawRepairCost: 0, rawTotalCost: 590 },
+      { vehicleId: 3, registrationNumber: 'FL-103', model: 'Ford Transit-250 High Roof', type: 'Delivery Van', fuelType: 'Gasoline', status: 'ACTIVE', odometer: '54,200 KM', maintenanceCost: '$250.00', repairCost: '$0.00', fuelCost: '$280.00', totalExpense: '$530.00', fuelQuantity: '70 L', avgMileageKml: '8.50 KM/L', rawFuelCost: 280, rawMaintCost: 250, rawRepairCost: 0, rawTotalCost: 530 },
+      { vehicleId: 4, registrationNumber: 'FL-104', model: 'Isuzu NPR-HD Box Truck', type: 'Box Truck', fuelType: 'Diesel', status: 'IN_SHOP', odometer: '68,900 KM', maintenanceCost: '$320.00', repairCost: '$1,310.00', fuelCost: '$310.00', totalExpense: '$1,940.00', fuelQuantity: '75 L', avgMileageKml: '6.50 KM/L', rawFuelCost: 310, rawMaintCost: 320, rawRepairCost: 1310, rawTotalCost: 1940 },
+      { vehicleId: 5, registrationNumber: 'FL-105', model: 'Ram ProMaster 3500', type: 'Cargo Van', fuelType: 'Gasoline', status: 'MAINTENANCE_DUE', odometer: '41,500 KM', maintenanceCost: '$680.00', repairCost: '$0.00', fuelCost: '$190.00', totalExpense: '$870.00', fuelQuantity: '45 L', avgMileageKml: '7.80 KM/L', rawFuelCost: 190, rawMaintCost: 680, rawRepairCost: 0, rawTotalCost: 870 },
+      { vehicleId: 6, registrationNumber: 'FL-106', model: 'Volvo VNL 860 Sleeper', type: 'Heavy Truck', fuelType: 'Diesel', status: 'ACTIVE', odometer: '115,000 KM', maintenanceCost: '$510.00', repairCost: '$0.00', fuelCost: '$650.00', totalExpense: '$1,160.00', fuelQuantity: '120 L', avgMileageKml: '3.90 KM/L', rawFuelCost: 650, rawMaintCost: 510, rawRepairCost: 0, rawTotalCost: 1160 },
+      { vehicleId: 7, registrationNumber: 'FL-107', model: 'Chevrolet Express 3500', type: 'Passenger Van', fuelType: 'Gasoline', status: 'UNSAFE', odometer: '92,100 KM', maintenanceCost: '$0.00', repairCost: '$480.00', fuelCost: '$210.00', totalExpense: '$690.00', fuelQuantity: '50 L', avgMileageKml: '6.20 KM/L', rawFuelCost: 210, rawMaintCost: 0, rawRepairCost: 480, rawTotalCost: 690 },
+      { vehicleId: 8, registrationNumber: 'FL-108', model: 'Kenworth T680 Next Gen', type: 'Heavy Truck', fuelType: 'Diesel', status: 'ACTIVE', odometer: '12,000 KM', maintenanceCost: '$0.00', repairCost: '$0.00', fuelCost: '$310.00', totalExpense: '$310.00', fuelQuantity: '80 L', avgMileageKml: '4.20 KM/L', rawFuelCost: 310, rawMaintCost: 0, rawRepairCost: 0, rawTotalCost: 310 },
+      { vehicleId: 9, registrationNumber: 'BUS-901', model: 'Volvo 7900 Electric City Bus', type: 'Transit / City Bus', fuelType: 'Electric', status: 'ACTIVE', odometer: '25,050 KM', maintenanceCost: '$650.00', repairCost: '$0.00', fuelCost: '$0.00', totalExpense: '$650.00', fuelQuantity: '0 L (EV)', avgMileageKml: 'N/A (EV)', rawFuelCost: 0, rawMaintCost: 650, rawRepairCost: 0, rawTotalCost: 650 }
+    ];
+
+    if (vehicleId) {
+      const vid = parseInt(vehicleId);
+      rawTable = rawTable.filter(r => r.vehicleId === vid);
+    }
+
+    let chartLabels = rawTable.map(r => r.registrationNumber);
+    let chartValues = [];
+
+    if (type === 'FUEL_EXPENSE') {
+      chartValues = rawTable.map(r => r.rawFuelCost);
+    } else if (type === 'ANNUAL_MAINTENANCE') {
+      chartValues = rawTable.map(r => r.rawMaintCost);
+    } else if (type === 'ANNUAL_REPAIRS') {
+      chartValues = rawTable.map(r => r.rawRepairCost);
+    } else {
+      chartValues = rawTable.map(r => r.rawTotalCost);
+    }
+
+    const totalFuel = rawTable.reduce((acc, r) => acc + r.rawFuelCost, 0);
+    const totalMaint = rawTable.reduce((acc, r) => acc + r.rawMaintCost, 0);
+    const totalRepair = rawTable.reduce((acc, r) => acc + r.rawRepairCost, 0);
+    const totalFleet = totalFuel + totalMaint + totalRepair;
+
     return {
-      totalVehicles: 9,
-      totalFleetCost: 8106.22,
-      totalMaintenanceCost: 3640.00,
-      totalRepairCost: 2850.00,
-      totalFuelCost: 1616.22,
+      reportType: type,
+      totalVehicles: rawTable.length,
+      totalFleetCost: totalFleet,
+      totalMaintenanceCost: totalMaint,
+      totalRepairCost: totalRepair,
+      totalFuelCost: totalFuel,
       avgFleetMileage: 7.4,
       avgFleetHealth: 81.6,
-      chartLabels: ['FL-101', 'FL-102', 'FL-103', 'FL-104', 'FL-105', 'FL-106', 'FL-107', 'FL-108', 'BUS-901'],
-      chartValues: [1430, 525, 760, 1460, 680, 1700, 490, 411, 650],
-      tableData: [
-        { vehicleId: 1, registrationNumber: 'FL-101', model: 'Freightliner Cascadia', type: 'Heavy Truck', status: 'ACTIVE', odometer: '82,400 KM', maintenanceCost: '$780.00', repairCost: '$650.00', fuelCost: '$540.00', totalExpense: '$1,970.00' },
-        { vehicleId: 2, registrationNumber: 'FL-102', model: 'Mercedes-Benz Sprinter', type: 'Cargo Van', status: 'MAINTENANCE_DUE', odometer: '39,580 KM', maintenanceCost: '$450.00', repairCost: '$0.00', fuelCost: '$140.00', totalExpense: '$590.00' },
-        { vehicleId: 3, registrationNumber: 'FL-103', model: 'Ford Transit-250', type: 'Delivery Van', status: 'ACTIVE', odometer: '54,200 KM', maintenanceCost: '$250.00', repairCost: '$0.00', fuelCost: '$280.00', totalExpense: '$530.00' },
-        { vehicleId: 4, registrationNumber: 'FL-104', model: 'Isuzu NPR-HD', type: 'Box Truck', status: 'IN_SHOP', odometer: '68,900 KM', maintenanceCost: '$320.00', repairCost: '$1,310.00', fuelCost: '$310.00', totalExpense: '$1,940.00' },
-        { vehicleId: 5, registrationNumber: 'FL-105', model: 'Ram ProMaster 3500', type: 'Cargo Van', status: 'MAINTENANCE_DUE', odometer: '41,500 KM', maintenanceCost: '$680.00', repairCost: '$0.00', fuelCost: '$190.00', totalExpense: '$870.00' },
-        { vehicleId: 6, registrationNumber: 'FL-106', model: 'Volvo VNL 860', type: 'Heavy Truck', status: 'ACTIVE', odometer: '115,000 KM', maintenanceCost: '$510.00', repairCost: '$0.00', fuelCost: '$650.00', totalExpense: '$1,160.00' },
-        { vehicleId: 7, registrationNumber: 'FL-107', model: 'Chevrolet Express', type: 'Passenger Van', status: 'UNSAFE', odometer: '92,100 KM', maintenanceCost: '$0.00', repairCost: '$480.00', fuelCost: '$210.00', totalExpense: '$690.00' },
-        { vehicleId: 8, registrationNumber: 'FL-108', model: 'Kenworth T680', type: 'Heavy Truck', status: 'ACTIVE', odometer: '12,000 KM', maintenanceCost: '$0.00', repairCost: '$0.00', fuelCost: '$310.00', totalExpense: '$310.00' },
-        { vehicleId: 9, registrationNumber: 'BUS-901', model: 'Volvo 7900 Electric Bus', type: 'Transit / City Bus', status: 'ACTIVE', odometer: '25,050 KM', maintenanceCost: '$650.00', repairCost: '$0.00', fuelCost: '$0.00', totalExpense: '$650.00' }
-      ]
+      chartLabels: chartLabels,
+      chartValues: chartValues,
+      tableData: rawTable
     };
   }
 

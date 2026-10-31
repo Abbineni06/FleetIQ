@@ -43,7 +43,11 @@ function generateSvgQrDataUri(token, regNumber) {
     <rect x="85" y="85" width="30" height="30" fill="#FFF7ED" rx="4" stroke="#F97316" stroke-width="2"/>
     <text x="100" y="104" font-family="Inter,sans-serif" font-size="10" font-weight="900" fill="#F97316" text-anchor="middle">FIQ</text>
   </svg>`;
-  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  try {
+    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+  } catch (e) {
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

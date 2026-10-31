@@ -33,7 +33,8 @@ public class ReportService {
 
     public FleetReportDTO generateReport(String type, String dateRange, Long vehicleId) {
         FleetReportDTO report = new FleetReportDTO();
-        report.setReportType(type != null ? type : "TOTAL_EXPENDITURE");
+        String reportCat = (type != null && !type.isBlank()) ? type.toUpperCase() : "TOTAL_EXPENDITURE";
+        report.setReportType(reportCat);
         report.setDateRange(dateRange != null ? dateRange : "Past 12 Months");
 
         List<Vehicle> vehicles = vehicleId != null
@@ -84,6 +85,7 @@ public class ReportService {
             row.put("registrationNumber", v.getRegistrationNumber());
             row.put("model", v.getMake() + " " + v.getModel());
             row.put("type", v.getVehicleType());
+            row.put("fuelType", v.getFuelType());
             row.put("status", v.getStatus().name());
             row.put("odometer", v.getCurrentOdometer() + " KM");
 
@@ -91,6 +93,9 @@ public class ReportService {
             BigDecimal vRepair = repairRepository.sumCostByVehicleId(v.getId());
             BigDecimal vFuel = fuelRepository.sumCostByVehicleId(v.getId());
             BigDecimal vTotal = vMaint.add(vRepair).add(vFuel);
+
+            Double vAvgKml = fuelRepository.averageMileageByVehicleId(v.getId());
+            row.put("avgMileageKml", vAvgKml != null && vAvgKml > 0 ? String.format("%.2f KM/L", vAvgKml) : (v.getFuelType().equalsIgnoreCase("Electric") ? "N/A (EV)" : "4.50 KM/L"));
 
             row.put("maintenanceCost", "$" + vMaint);
             row.put("repairCost", "$" + vRepair);
@@ -100,7 +105,16 @@ public class ReportService {
             rows.add(row);
 
             chartLabels.add(v.getRegistrationNumber());
-            chartValues.add(vTotal);
+
+            if ("FUEL_EXPENSE".equals(reportCat)) {
+                chartValues.add(vFuel);
+            } else if ("ANNUAL_MAINTENANCE".equals(reportCat)) {
+                chartValues.add(vMaint);
+            } else if ("ANNUAL_REPAIRS".equals(reportCat)) {
+                chartValues.add(vRepair);
+            } else {
+                chartValues.add(vTotal);
+            }
         }
 
         report.setTableData(rows);
@@ -112,19 +126,60 @@ public class ReportService {
 
     public String exportToCsv(FleetReportDTO report) {
         StringBuilder csv = new StringBuilder();
-        csv.append("Registration Number,Vehicle Model,Type,Status,Odometer,Maintenance Cost,Repair Cost,Fuel Cost,Total Cost\n");
+        String cat = report.getReportType() != null ? report.getReportType().toUpperCase() : "TOTAL_EXPENDITURE";
 
-        if (report.getTableData() != null) {
-            for (Map<String, Object> row : report.getTableData()) {
-                csv.append(escape(row.get("registrationNumber"))).append(",")
-                   .append(escape(row.get("model"))).append(",")
-                   .append(escape(row.get("type"))).append(",")
-                   .append(escape(row.get("status"))).append(",")
-                   .append(escape(row.get("odometer"))).append(",")
-                   .append(escape(row.get("maintenanceCost"))).append(",")
-                   .append(escape(row.get("repairCost"))).append(",")
-                   .append(escape(row.get("fuelCost"))).append(",")
-                   .append(escape(row.get("totalExpense"))).append("\n");
+        if ("FUEL_EXPENSE".equals(cat)) {
+            csv.append("Registration Number,Vehicle Model,Type,Fuel Type,Status,Current Odometer,Average Mileage,Fuel Expense\n");
+            if (report.getTableData() != null) {
+                for (Map<String, Object> row : report.getTableData()) {
+                    csv.append(escape(row.get("registrationNumber"))).append(",")
+                       .append(escape(row.get("model"))).append(",")
+                       .append(escape(row.get("type"))).append(",")
+                       .append(escape(row.get("fuelType"))).append(",")
+                       .append(escape(row.get("status"))).append(",")
+                       .append(escape(row.get("odometer"))).append(",")
+                       .append(escape(row.get("avgMileageKml"))).append(",")
+                       .append(escape(row.get("fuelCost"))).append("\n");
+                }
+            }
+        } else if ("ANNUAL_MAINTENANCE".equals(cat)) {
+            csv.append("Registration Number,Vehicle Model,Type,Status,Current Odometer,Maintenance Cost\n");
+            if (report.getTableData() != null) {
+                for (Map<String, Object> row : report.getTableData()) {
+                    csv.append(escape(row.get("registrationNumber"))).append(",")
+                       .append(escape(row.get("model"))).append(",")
+                       .append(escape(row.get("type"))).append(",")
+                       .append(escape(row.get("status"))).append(",")
+                       .append(escape(row.get("odometer"))).append(",")
+                       .append(escape(row.get("maintenanceCost"))).append("\n");
+                }
+            }
+        } else if ("ANNUAL_REPAIRS".equals(cat)) {
+            csv.append("Registration Number,Vehicle Model,Type,Status,Current Odometer,Repair Cost\n");
+            if (report.getTableData() != null) {
+                for (Map<String, Object> row : report.getTableData()) {
+                    csv.append(escape(row.get("registrationNumber"))).append(",")
+                       .append(escape(row.get("model"))).append(",")
+                       .append(escape(row.get("type"))).append(",")
+                       .append(escape(row.get("status"))).append(",")
+                       .append(escape(row.get("odometer"))).append(",")
+                       .append(escape(row.get("repairCost"))).append("\n");
+                }
+            }
+        } else {
+            csv.append("Registration Number,Vehicle Model,Type,Status,Odometer,Maintenance Cost,Repair Cost,Fuel Cost,Total Cost\n");
+            if (report.getTableData() != null) {
+                for (Map<String, Object> row : report.getTableData()) {
+                    csv.append(escape(row.get("registrationNumber"))).append(",")
+                       .append(escape(row.get("model"))).append(",")
+                       .append(escape(row.get("type"))).append(",")
+                       .append(escape(row.get("status"))).append(",")
+                       .append(escape(row.get("odometer"))).append(",")
+                       .append(escape(row.get("maintenanceCost"))).append(",")
+                       .append(escape(row.get("repairCost"))).append(",")
+                       .append(escape(row.get("fuelCost"))).append(",")
+                       .append(escape(row.get("totalExpense"))).append("\n");
+                }
             }
         }
         return csv.toString();

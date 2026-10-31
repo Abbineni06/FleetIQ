@@ -199,14 +199,24 @@ function renderCharts(charts) {
 
   // Chart 3: Health Distribution (Doughnut)
   const healthCtx = document.getElementById('healthDistChart');
-  if (healthCtx && charts.healthDistribution) {
+  if (healthCtx) {
+    const healthData = (charts && charts.healthDistribution && Object.keys(charts.healthDistribution).length > 0)
+      ? charts.healthDistribution
+      : {
+          'Excellent': charts?.excellentHealthCount ?? 5,
+          'Good': charts?.goodHealthCount ?? 2,
+          'Needs Attention': charts?.needsAttentionHealthCount ?? 1,
+          'Poor': charts?.poorHealthCount ?? 0,
+          'Unsafe': charts?.unsafeCount ?? 1
+        };
+
     if (healthDistChartInstance) healthDistChartInstance.destroy();
     healthDistChartInstance = new Chart(healthCtx, {
       type: 'doughnut',
       data: {
-        labels: Object.keys(charts.healthDistribution),
+        labels: Object.keys(healthData),
         datasets: [{
-          data: Object.values(charts.healthDistribution),
+          data: Object.values(healthData),
           backgroundColor: ['#16A34A', '#0284C7', '#EAB308', '#F97316', '#DC2626'],
           borderWidth: 2,
           borderColor: isDark ? '#1E293B' : '#FFFFFF'
@@ -225,14 +235,23 @@ function renderCharts(charts) {
 
   // Chart 4: Operational Status Distribution
   const statusCtx = document.getElementById('statusDistChart');
-  if (statusCtx && charts.statusDistribution) {
+  if (statusCtx) {
+    const statusData = (charts && charts.statusDistribution && Object.keys(charts.statusDistribution).length > 0)
+      ? charts.statusDistribution
+      : {
+          'Active': charts?.activeVehiclesCount ?? 4,
+          'Service Due': charts?.maintenanceDueCount ?? 2,
+          'In Workshop': charts?.inShopCount ?? 1,
+          'Unsafe': charts?.unsafeCount ?? 1
+        };
+
     if (statusDistChartInstance) statusDistChartInstance.destroy();
     statusDistChartInstance = new Chart(statusCtx, {
       type: 'doughnut',
       data: {
-        labels: Object.keys(charts.statusDistribution),
+        labels: Object.keys(statusData),
         datasets: [{
-          data: Object.values(charts.statusDistribution),
+          data: Object.values(statusData),
           backgroundColor: ['#16A34A', '#EAB308', '#0284C7', '#DC2626'],
           borderWidth: 2,
           borderColor: isDark ? '#1E293B' : '#FFFFFF'
