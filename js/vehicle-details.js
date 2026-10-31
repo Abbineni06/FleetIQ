@@ -67,10 +67,10 @@ async function loadVehicleData() {
     document.getElementById('v-hero-health-cat').textContent = currentVehicle.healthCategory || 'Good';
 
     // Quick links
-    document.getElementById('btn-schedule-maint-link').href = `/maintenance.html?vehicleId=${currentVehicleId}&action=schedule`;
-    document.getElementById('btn-log-repair-link').href = `/repairs.html?vehicleId=${currentVehicleId}&action=add`;
-    document.getElementById('btn-add-fuel-link').href = `/fuel.html?vehicleId=${currentVehicleId}&action=add`;
-    document.getElementById('btn-new-insp-link').href = `/inspections.html?vehicleId=${currentVehicleId}&action=new`;
+    document.getElementById('btn-schedule-maint-link').href = `maintenance.html?vehicleId=${currentVehicleId}&action=schedule`;
+    document.getElementById('btn-log-repair-link').href = `repairs.html?vehicleId=${currentVehicleId}&action=add`;
+    document.getElementById('btn-add-fuel-link').href = `fuel.html?vehicleId=${currentVehicleId}&action=add`;
+    document.getElementById('btn-new-insp-link').href = `inspections.html?vehicleId=${currentVehicleId}&action=new`;
 
     // Render Overview Specs
     renderOverviewSpecs();
@@ -395,4 +395,65 @@ function generateSvgQrDataUri(token, regNumber) {
 
 function printQrSheet() {
   window.print();
+}
+
+function openOdometerModal() {
+  if (!currentVehicle) return;
+  const curr = currentVehicle.currentOdometer || 0;
+  document.getElementById('odo-current-val').value = curr;
+  document.getElementById('odo-new-val').value = curr + 100;
+  document.getElementById('odo-new-val').min = curr;
+  document.getElementById('odo-notes').value = '';
+  document.getElementById('odometer-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('odo-new-val').focus(), 100);
+}
+
+function closeOdometerModal() {
+  const modal = document.getElementById('odometer-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function handleOdometerSubmit(e) {
+  e.preventDefault();
+  const newKm = parseInt(document.getElementById('odo-new-val').value);
+  const notes = document.getElementById('odo-notes').value.trim();
+  const curr = currentVehicle.currentOdometer || 0;
+
+  if (isNaN(newKm) || newKm < curr) {
+    showToast(`New odometer (${newKm} KM) must be ≥ current reading (${curr.toLocaleString()} KM)`, 'warning');
+    return;
+  }
+
+  const saveBtn = document.getElementById('btn-save-odo');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+
+  try {
+    const updated = await API.post(`/api/vehicles/${currentVehicleId}/odometer`, {
+      readingKm: newKm,
+      notes: notes || 'Odometer update via vehicle profile'
+    });
+    showToast('Odometer updated successfully!', 'success');
+    closeOdometerModal();
+
+    currentVehicle.currentOdometer = updated.currentOdometer || newKm;
+    if (updated.remainingKm !== undefined) currentVehicle.remainingKm = updated.remainingKm;
+    if (updated.status) currentVehicle.status = updated.status;
+
+    renderOverviewSpecs();
+
+    const statusEl = document.getElementById('v-hero-status');
+    if (statusEl && currentVehicle.status) {
+      statusEl.className = 'badge';
+      if (currentVehicle.status === 'ACTIVE') { statusEl.classList.add('badge-success'); statusEl.textContent = 'Active'; }
+      else if (currentVehicle.status === 'MAINTENANCE_DUE') { statusEl.classList.add('badge-warning'); statusEl.textContent = 'Maintenance Due'; }
+      else if (currentVehicle.status === 'IN_SHOP') { statusEl.classList.add('badge-info'); statusEl.textContent = 'In Shop'; }
+      else if (currentVehicle.status === 'UNSAFE') { statusEl.classList.add('badge-danger'); statusEl.textContent = 'UNSAFE / Grounded'; }
+    }
+  } catch (err) {
+    showToast('Failed to update odometer: ' + err.message, 'danger');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Reading';
+  }
 }

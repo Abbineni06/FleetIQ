@@ -365,7 +365,7 @@ function handleGlobalSearch(event) {
   if (event.key === 'Enter') {
     const query = event.target.value.trim();
     if (query) {
-      window.location.href = `/vehicles.html?search=${encodeURIComponent(query)}`;
+      window.location.href = `vehicles.html?search=${encodeURIComponent(query)}`;
     }
   }
 }
@@ -437,7 +437,7 @@ function openNotificationDetail(notifId, vehicleId) {
   API.patch(`/api/notifications/${notifId}/read`, {}).then(() => {
     updateNotificationBadge();
     if (vehicleId) {
-      window.location.href = `/vehicle-details.html?id=${vehicleId}`;
+      window.location.href = `vehicle-details.html?id=${vehicleId}`;
     } else {
       window.location.href = 'notifications.html';
     }
