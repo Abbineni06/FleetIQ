@@ -65,7 +65,6 @@ async function loadVehicleQrCards() {
 
     container.innerHTML = vehicles.map(v => {
       const token = v.qrToken || `QR-FI-${v.registrationNumber}-SECURE`;
-      const qrImg = v.qrCodeBase64 || generateSvgQrDataUri(token, v.registrationNumber);
       const publicUrl = `qr-view.html?token=${encodeURIComponent(token)}`;
 
       return `
@@ -80,18 +79,16 @@ async function loadVehicleQrCards() {
             <div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(v.vehicleType)}</div>
           </div>
 
-          <div class="qr-img-wrapper">
-            <img src="${qrImg}" alt="QR ${escapeHtml(v.registrationNumber)}" style="width:160px;height:160px;display:block;" />
-          </div>
+          <div class="qr-img-wrapper" id="qr-box-${v.id}" style="width:160px;height:160px;margin:12px auto;display:flex;align-items:center;justify-content:center;background:#FFFFFF;border-radius:8px;padding:4px;box-sizing:border-box;"></div>
 
           <div style="width:100%;">
             <div style="font-size:0.7rem;font-family:monospace;color:var(--text-muted);margin-bottom:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${token}">
               Token: ${escapeHtml(token)}
             </div>
             <div style="display:flex;gap:8px;justify-content:center;">
-              <a href="${qrImg}" download="${v.registrationNumber}-qr.svg" class="btn btn-sm btn-primary" title="Download QR">
+              <button onclick="downloadQrCode(${v.id}, '${escapeHtml(v.registrationNumber)}')" class="btn btn-sm btn-primary" title="Download QR">
                 <i data-lucide="download" style="width:14px;height:14px;"></i> Download
-              </a>
+              </button>
               <a href="${publicUrl}" target="_blank" class="btn btn-sm btn-secondary" title="View Public Profile">
                 <i data-lucide="external-link" style="width:14px;height:14px;"></i> Open Pass
               </a>
@@ -101,8 +98,65 @@ async function loadVehicleQrCards() {
       `;
     }).join('');
 
+    // Generate phone-scannable QR codes into each container
+    vehicles.forEach(v => {
+      const box = document.getElementById(`qr-box-${v.id}`);
+      if (!box) return;
+      const token = v.qrToken || `QR-FI-${v.registrationNumber}-SECURE`;
+      const passUrl = `${window.location.origin}${window.location.pathname.replace(/\/[^/]*$/, '')}/qr-view.html?token=${encodeURIComponent(token)}`;
+
+      box.innerHTML = '';
+      if (typeof QRCode !== 'undefined') {
+        try {
+          new QRCode(box, {
+            text: passUrl,
+            width: 152,
+            height: 152,
+            colorDark: "#171717",
+            colorLight: "#FFFFFF",
+            correctLevel: QRCode.CorrectLevel.M
+          });
+          return;
+        } catch (e) {
+          console.warn('QRCode library error, using SVG fallback', e);
+        }
+      }
+
+      if (v.qrCodeBase64 && v.qrCodeBase64.startsWith('data:image')) {
+        box.innerHTML = `<img src="${v.qrCodeBase64}" alt="QR ${escapeHtml(v.registrationNumber)}" style="width:152px;height:152px;display:block;" />`;
+      } else {
+        box.innerHTML = `<img src="${generateSvgQrDataUri(token, v.registrationNumber)}" alt="QR ${escapeHtml(v.registrationNumber)}" style="width:152px;height:152px;display:block;" />`;
+      }
+    });
+
     if (window.lucide) lucide.createIcons();
   } catch (err) {
     showToast('Failed to load QR tokens: ' + err.message, 'danger');
   }
+}
+
+function downloadQrCode(vehicleId, regNumber) {
+  const box = document.getElementById(`qr-box-${vehicleId}`);
+  if (!box) return;
+
+  const canvas = box.querySelector('canvas');
+  const img = box.querySelector('img');
+  let dataUrl = '';
+
+  if (canvas) {
+    dataUrl = canvas.toDataURL('image/png');
+  } else if (img) {
+    dataUrl = img.src;
+  }
+
+  if (!dataUrl) {
+    dataUrl = generateSvgQrDataUri(`QR-FI-${regNumber}-SECURE`, regNumber);
+  }
+
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = `${regNumber}-qr.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
