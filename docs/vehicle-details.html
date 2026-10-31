@@ -139,6 +139,9 @@
           <div class="card" style="margin-bottom:24px;">
             <div class="card-header">
               <div class="card-title"><i data-lucide="sliders" style="color:var(--primary-orange);"></i> Specifications & Service Thresholds</div>
+              <button class="btn btn-secondary btn-sm" onclick="openOdometerModal()">
+                <i data-lucide="gauge" style="width:14px;height:14px;"></i> Update Odometer
+              </button>
             </div>
 
             <div class="spec-grid" id="v-spec-grid">
@@ -326,6 +329,39 @@
           </div>
         </div>
       </main>
+    </div>
+  </div>
+
+  <!-- Modal: Update Odometer -->
+  <div class="modal-overlay" id="odometer-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:9999;">
+    <div class="modal-content" style="max-width:440px;background:var(--bg-card);padding:24px;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:90%;border:1px solid var(--border-color);">
+      <div class="modal-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 class="modal-title" style="font-size:1.1rem;font-weight:700;color:var(--text-primary);margin:0;">Update Odometer Reading</h3>
+        <button style="background:transparent;border:none;font-size:1.4rem;color:var(--text-muted);cursor:pointer;" onclick="closeOdometerModal()">×</button>
+      </div>
+      <form onsubmit="handleOdometerSubmit(event)">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <label class="form-label" style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:6px;">Current Reading (KM)</label>
+            <input type="number" id="odo-current-val" class="form-control" disabled style="width:100%;padding:8px 12px;background:var(--bg-subtle);" />
+          </div>
+          <div>
+            <label class="form-label" style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:6px;">New Odometer (KM) *</label>
+            <input type="number" id="odo-new-val" class="form-control" required min="1" placeholder="e.g. 85000" style="width:100%;padding:8px 12px;" />
+            <small style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;display:block;">
+              Must be greater than current reading. Exceeding next service triggers service alert.
+            </small>
+          </div>
+          <div>
+            <label class="form-label" style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:6px;">Notes (Optional)</label>
+            <input type="text" id="odo-notes" class="form-control" placeholder="e.g. End of shift reading, highway route" style="width:100%;padding:8px 12px;" />
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeOdometerModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-odo">Save Reading</button>
+        </div>
+      </form>
     </div>
   </div>
 

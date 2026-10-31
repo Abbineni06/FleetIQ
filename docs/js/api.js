@@ -229,6 +229,13 @@ const _MOCK_DB = {
     { id: 1, vehicleId: 9, vehicleRegistration: 'BUS-901', vehicleModel: 'Volvo 7900 Electric Bus', serviceDate: '2026-10-25', maintenanceType: 'PREVENTIVE', odometerKm: 25050, workPerformed: 'High voltage system isolation test, brake regeneration calibration', partsReplaced: 'Cabin HEPA Filter, Inverter Coolant', cost: 650.00, mechanicName: 'Metro Transit Tech' },
     { id: 2, vehicleId: 1, vehicleRegistration: 'FL-101', vehicleModel: 'Freightliner Cascadia', serviceDate: '2026-09-12', maintenanceType: 'OIL_CHANGE', odometerKm: 75000, workPerformed: 'Full synthetic 15W-40 engine oil swap, lube chassis', partsReplaced: 'Dual Oil Filter, Fuel Filter Water Separator', cost: 420.00, mechanicName: 'Apex Truck Services' },
     { id: 3, vehicleId: 3, vehicleRegistration: 'FL-103', vehicleModel: 'Ford Transit-250', serviceDate: '2026-08-30', maintenanceType: 'TIRE_ROTATION', odometerKm: 50000, workPerformed: 'Four wheel rotation and alignment verification', partsReplaced: 'Valve stems', cost: 120.00, mechanicName: 'FleetIQ Depot #2' }
+  ],
+  users: [
+    { id: 1, username: 'admin', fullName: 'Alex Morgan', email: 'admin@fleetiq.io', phone: '+1 (555) 019-2831', role: 'ROLE_ADMIN', active: true },
+    { id: 2, username: 'manager', fullName: 'Sarah Jenkins', email: 'manager@fleetiq.io', phone: '+1 (555) 019-4822', role: 'ROLE_MANAGER', active: true },
+    { id: 3, username: 'driver1', fullName: 'David Miller', email: 'driver1@fleetiq.io', phone: '+1 (555) 019-7714', role: 'ROLE_DRIVER', active: true },
+    { id: 4, username: 'driver2', fullName: 'Elena Gomez', email: 'driver2@fleetiq.io', phone: '+1 (555) 019-9923', role: 'ROLE_DRIVER', active: true },
+    { id: 5, username: 'driver3', fullName: 'James Wilson', email: 'driver3@fleetiq.io', phone: '+1 (555) 019-3388', role: 'ROLE_DRIVER', active: true }
   ]
 };
 
@@ -248,11 +255,7 @@ function handleGitHubPagesMock(endpoint, options = {}) {
 
   // Drivers List
   if (endpoint.includes('/api/auth/drivers')) {
-    return [
-      { id: 3, username: 'driver1', fullName: 'David Miller', email: 'driver1@fleetiq.io', role: 'ROLE_DRIVER' },
-      { id: 4, username: 'driver2', fullName: 'Elena Gomez', email: 'driver2@fleetiq.io', role: 'ROLE_DRIVER' },
-      { id: 5, username: 'driver3', fullName: 'James Wilson', email: 'driver3@fleetiq.io', role: 'ROLE_DRIVER' }
-    ];
+    return _MOCK_DB.users.filter(u => u.role === 'ROLE_DRIVER' && u.active);
   }
 
   // Single Vehicle by ID
@@ -262,14 +265,15 @@ function handleGitHubPagesMock(endpoint, options = {}) {
     return _MOCK_DB.vehicles.find(v => v.id === vid) || _MOCK_DB.vehicles[0];
   }
 
-  // Odometer Update PATCH
-  if (endpoint.includes('/odometer') && method === 'PATCH') {
+  // Odometer Update (POST or PATCH)
+  if (endpoint.includes('/odometer') && (method === 'POST' || method === 'PATCH')) {
     const vidMatch = endpoint.match(/\/api\/vehicles\/(\d+)\/odometer/);
     if (vidMatch) {
       const vid = parseInt(vidMatch[1]);
       const target = _MOCK_DB.vehicles.find(v => v.id === vid);
-      if (target && body.currentOdometer) {
-        target.currentOdometer = parseInt(body.currentOdometer);
+      const newOdo = parseInt(body.readingKm || body.currentOdometer);
+      if (target && !isNaN(newOdo)) {
+        target.currentOdometer = newOdo;
         target.remainingKm = target.nextServiceKm - target.currentOdometer;
         if (target.remainingKm <= 0) target.status = 'MAINTENANCE_DUE';
         return target;
@@ -395,6 +399,17 @@ function handleGitHubPagesMock(endpoint, options = {}) {
       cost: parseFloat(body.cost) || 450.00,
       mechanicName: body.mechanicName || 'Apex Workshop'
     };
+    if (v) {
+      v.lastServiceKm = rec.odometerKm;
+      v.serviceIntervalKm = parseInt(body.serviceIntervalKm) || v.serviceIntervalKm || 10000;
+      v.nextServiceKm = v.lastServiceKm + v.serviceIntervalKm;
+      v.remainingKm = v.nextServiceKm - v.currentOdometer;
+      if (v.status === 'MAINTENANCE_DUE' && v.remainingKm > 0) {
+        v.status = 'ACTIVE';
+        v.healthScore = Math.min(100, v.healthScore + 20);
+        v.healthCategory = v.healthScore >= 90 ? 'Excellent' : 'Good';
+      }
+    }
     _MOCK_DB.maintenance.unshift(rec);
     return rec;
   }
@@ -433,6 +448,28 @@ function handleGitHubPagesMock(endpoint, options = {}) {
     return _MOCK_DB.fuel;
   }
 
+  // Repair Status Update PATCH
+  if (endpoint.includes('/status') && endpoint.includes('/api/repairs')) {
+    const repMatch = endpoint.match(/\/api\/repairs\/(\d+)\/status/);
+    if (repMatch) {
+      const repId = parseInt(repMatch[1]);
+      const target = _MOCK_DB.repairs.find(r => r.id === repId);
+      if (target) {
+        if (body.repairStatus) target.repairStatus = body.repairStatus;
+        if (body.finalCost) target.cost = parseFloat(body.finalCost);
+        const v = _MOCK_DB.vehicles.find(x => x.id === target.vehicleId);
+        if (v && target.repairStatus === 'COMPLETED') {
+          if (v.status === 'IN_SHOP' || v.status === 'UNSAFE') {
+            v.status = 'ACTIVE';
+            v.healthScore = Math.min(100, v.healthScore + 25);
+            v.healthCategory = v.healthScore >= 90 ? 'Excellent' : 'Good';
+          }
+        }
+        return target;
+      }
+    }
+  }
+
   // Repairs & Vehicle Repairs
   if (endpoint.includes('/api/repairs/vehicle') || endpoint === '/api/repairs' || endpoint.startsWith('/api/repairs?')) {
     if (method === 'POST') {
@@ -448,9 +485,13 @@ function handleGitHubPagesMock(endpoint, options = {}) {
         priority: body.priority || 'MEDIUM',
         repairStatus: body.repairStatus || 'PENDING',
         cost: parseFloat(body.cost) || 350.00,
-        workshopName: body.workshopName || 'FleetIQ Bay #1',
+        mechanicName: body.mechanicName || 'FleetIQ Bay #1',
         partsReplaced: body.partsReplaced || 'Service items'
       };
+      if (v && (rep.repairStatus === 'IN_PROGRESS' || rep.priority === 'HIGH')) {
+        v.status = 'IN_SHOP';
+        v.healthScore = Math.max(40, v.healthScore - 15);
+      }
       _MOCK_DB.repairs.unshift(rep);
       return rep;
     }
@@ -500,11 +541,17 @@ function handleGitHubPagesMock(endpoint, options = {}) {
         vehicleModel: `${v.make} ${v.model}`,
         overallScore: v.healthScore,
         category: v.healthCategory,
-        maintenanceScore: v.status === 'MAINTENANCE_DUE' ? 60 : 95,
-        inspectionScore: v.status === 'UNSAFE' ? 20 : 90,
-        repairScore: v.status === 'IN_SHOP' ? 50 : 85,
+        maintenanceComplianceScore: v.status === 'MAINTENANCE_DUE' ? 55 : 98,
+        inspectionScore: v.status === 'UNSAFE' ? 25 : 95,
+        repairFrequencyScore: v.status === 'IN_SHOP' ? 60 : 92,
+        overduePenalty: v.status === 'MAINTENANCE_DUE' ? 15 : 0,
         unsafe: v.status === 'UNSAFE',
-        penaltyReasons: v.status === 'UNSAFE' ? ['Critical steering system failure reported during inspection'] : (v.status === 'MAINTENANCE_DUE' ? ['Scheduled service threshold exceeded'] : [])
+        reasons: v.status === 'UNSAFE'
+          ? 'CRITICAL safety defect flagged during recent pre-trip inspection!'
+          : (v.status === 'MAINTENANCE_DUE' ? `Vehicle is overdue for scheduled service by ${Math.abs(v.remainingKm || 1500)} KM.` : 'All operational parameters within manufacturer tolerance.'),
+        recommendedActions: v.status === 'UNSAFE'
+          ? 'Ground vehicle immediately; dispatch to hydraulic steering technician.'
+          : (v.status === 'MAINTENANCE_DUE' ? 'Route vehicle to maintenance bay for primary oil & multipoint service.' : 'Continue routine daily pre-trip inspections.')
       }))
     };
   }
@@ -652,7 +699,10 @@ function handleGitHubPagesMock(endpoint, options = {}) {
     return { reply: reply, threadId: 'gh-thread-1' };
   }
 
-  // Notifications
+  // Notifications Read & Mark All
+  if (endpoint.includes('/api/notifications') && endpoint.includes('/read')) {
+    return { success: true };
+  }
   if (endpoint.includes('/api/notifications/unread-count')) {
     return { unreadCount: 3 };
   }
@@ -666,25 +716,48 @@ function handleGitHubPagesMock(endpoint, options = {}) {
 
   // System Settings
   if (endpoint.includes('/api/settings')) {
+    if (method === 'POST') {
+      return { success: true, message: 'Settings saved' };
+    }
     return {
       upcoming_service_threshold_km: 1000,
       due_soon_threshold_km: 500,
-      weight_maintenance_compliance: 0.35,
-      weight_inspection_results: 0.30,
-      weight_repair_frequency: 0.20,
-      weight_overdue_penalty: 0.15
+      weight_maintenance_compliance: 30,
+      weight_inspection_results: 30,
+      weight_repair_frequency: 20,
+      weight_overdue_penalty: 20
     };
   }
 
   // User Management
-  if (endpoint.includes('/api/users')) {
-    return [
-      { id: 1, username: 'admin', fullName: 'Alex Morgan', email: 'admin@fleetiq.io', role: 'ROLE_ADMIN', active: true },
-      { id: 2, username: 'manager', fullName: 'Sarah Jenkins', email: 'manager@fleetiq.io', role: 'ROLE_MANAGER', active: true },
-      { id: 3, username: 'driver1', fullName: 'David Miller', email: 'driver1@fleetiq.io', role: 'ROLE_DRIVER', active: true },
-      { id: 4, username: 'driver2', fullName: 'Elena Gomez', email: 'driver2@fleetiq.io', role: 'ROLE_DRIVER', active: true },
-      { id: 5, username: 'driver3', fullName: 'James Wilson', email: 'driver3@fleetiq.io', role: 'ROLE_DRIVER', active: true }
-    ];
+  if (endpoint.includes('/toggle-status')) {
+    const uidMatch = endpoint.match(/\/api\/users\/(\d+)\/toggle-status/);
+    if (uidMatch) {
+      const uid = parseInt(uidMatch[1]);
+      const target = _MOCK_DB.users.find(u => u.id === uid);
+      if (target) {
+        target.active = !target.active;
+        return target;
+      }
+    }
+    return { success: true };
+  }
+
+  if (endpoint === '/api/users' || endpoint.startsWith('/api/users?')) {
+    if (method === 'POST') {
+      const newU = {
+        id: _MOCK_DB.users.length + 1,
+        username: body.username || `user${_MOCK_DB.users.length + 1}`,
+        fullName: body.fullName || 'New Fleet Operator',
+        email: body.email || 'user@fleetiq.io',
+        phone: body.phone || '+1 (555) 000-0000',
+        role: body.role || 'ROLE_DRIVER',
+        active: true
+      };
+      _MOCK_DB.users.push(newU);
+      return newU;
+    }
+    return _MOCK_DB.users;
   }
 
   return { success: true, message: 'Simulated operation on GitHub Pages' };

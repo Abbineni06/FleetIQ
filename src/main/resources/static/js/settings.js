@@ -35,17 +35,21 @@ async function loadSettings() {
     if (settings.due_soon_threshold_km) {
       document.getElementById('set-due-soon-km').value = settings.due_soon_threshold_km;
     }
-    if (settings.weight_maintenance_compliance) {
-      document.getElementById('set-weight-maint').value = settings.weight_maintenance_compliance;
+    if (settings.weight_maintenance_compliance !== undefined) {
+      const val = parseFloat(settings.weight_maintenance_compliance);
+      document.getElementById('set-weight-maint').value = val <= 1 && val > 0 ? Math.round(val * 100) : Math.round(val);
     }
-    if (settings.weight_inspection_results) {
-      document.getElementById('set-weight-insp').value = settings.weight_inspection_results;
+    if (settings.weight_inspection_results !== undefined) {
+      const val = parseFloat(settings.weight_inspection_results);
+      document.getElementById('set-weight-insp').value = val <= 1 && val > 0 ? Math.round(val * 100) : Math.round(val);
     }
-    if (settings.weight_repair_frequency) {
-      document.getElementById('set-weight-repair').value = settings.weight_repair_frequency;
+    if (settings.weight_repair_frequency !== undefined) {
+      const val = parseFloat(settings.weight_repair_frequency);
+      document.getElementById('set-weight-repair').value = val <= 1 && val > 0 ? Math.round(val * 100) : Math.round(val);
     }
-    if (settings.weight_overdue_penalty) {
-      document.getElementById('set-weight-overdue').value = settings.weight_overdue_penalty;
+    if (settings.weight_overdue_penalty !== undefined) {
+      const val = parseFloat(settings.weight_overdue_penalty);
+      document.getElementById('set-weight-overdue').value = val <= 1 && val > 0 ? Math.round(val * 100) : Math.round(val);
     }
   } catch (e) {
     console.error('Could not load settings', e);
